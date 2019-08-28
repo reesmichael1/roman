@@ -37,6 +37,10 @@ proc collectArgs(): seq[string] =
   for ix in 1..paramCount():
     result.add(paramStr(ix))
 
+  if result.len == 0:
+    result = @["--help"]
+
+
 
 when isMainModule:
   var p = newParser("roman"):
