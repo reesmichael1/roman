@@ -1,6 +1,7 @@
 import htmlparser
 import os
 import streams
+import strformat
 import xmltree
 
 import argparse
@@ -10,18 +11,22 @@ import feednim / Rss
 
 proc extractBody(body: string): string = 
   let strm = newStringStream(body)
-  let tree = htmlparser.parseHtml(strm)
-  # Very simple method to just extract all of the text nodes.
-  # This will be refined.
-  for node in tree:
-    case node.kind
-    of xnText:
-      result &= $node
-    else:
-      continue
+  try: 
+    let tree = htmlparser.parseHtml(strm)
+    # Very simple method to just extract all of the text nodes.
+    # This will be refined.
+    for node in tree:
+      case node.kind
+      of xnText:
+        result &= $node
+      else:
+        continue
+  except:
+    echo "could not parse html"
+    quit(1)
 
 
-proc displayFeed(feed: Rss) = 
+proc displayFeed(feed: Rss) =  
   for item in feed.items:
     echo item.title
     let body = extractBody(item.description)
@@ -29,8 +34,12 @@ proc displayFeed(feed: Rss) =
 
 
 proc main(url: string) = 
-  let feed = feednim.getRSS(url)
-  displayFeed(feed)
+  try:
+    let feed = feednim.getRSS(url)
+    displayFeed(feed)
+  except ValueError:
+    echo &"{url} is not a valid URL"
+    quit(1)
 
 
 proc collectArgs(): seq[string] =
@@ -39,7 +48,6 @@ proc collectArgs(): seq[string] =
 
   if result.len == 0:
     result = @["--help"]
-
 
 
 when isMainModule:
