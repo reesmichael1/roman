@@ -9,7 +9,11 @@ import feednim
 import feednim / Rss
 
 
-proc extractBody(body: string): string = 
+type RomanError = 
+  object of Exception
+
+
+proc extractBody(body: string): string {.raises: [RomanError].} =
   let strm = newStringStream(body)
   try: 
     let tree = htmlparser.parseHtml(strm)
@@ -22,32 +26,52 @@ proc extractBody(body: string): string =
       else:
         continue
   except:
-    echo "could not parse html"
-    quit(1)
+    raise newException(RomanError, "could not parse html")
 
 
-proc displayFeed(feed: Rss) =  
+proc displayFeed(feed: Rss) {.raises: [RomanError].} =  
   for item in feed.items:
     echo item.title
     let body = extractBody(item.description)
     echo body, "\n\n"
 
 
-proc main(url: string) = 
+proc getFeed(url: string): Rss {.raises: [ValueError, RomanError].} = 
   try:
-    let feed = feednim.getRSS(url)
-    displayFeed(feed)
+    result = feednim.getRSS(url)
   except ValueError:
-    echo &"{url} is not a valid URL"
+    raise newException(RomanError, &"{url} is not a valid URL")
+  except: 
+    let msg = getCurrentExceptionMsg()
+    raise newException(RomanError, &"error while accessing {url}: {msg}")
+
+
+proc collectArgs(): seq[string] {.raises: [RomanError].} =
+  try:
+    for ix in 1..paramCount():
+      result.add(paramStr(ix))
+
+    if result.len == 0:
+      result = @["--help"]
+  except IndexError:
+    # This really should not happen
+    raise newException(RomanError, 
+      "index error in arg parsing, please file a bug")
+
+
+proc main(url: string) {.raises: [] .} = 
+  try:
+    let feed = getFeed(url)
+    displayFeed(feed)
+  except RomanError as e:
+    echo "error: ", e.msg
+    quit(1)
+  # ValueError is raised by strformat if a bad format string is given to fmt
+  # In theory, this path is unreachable
+  except ValueError: 
+    echo "undescribable error during execution, please file a bug"
     quit(1)
 
-
-proc collectArgs(): seq[string] =
-  for ix in 1..paramCount():
-    result.add(paramStr(ix))
-
-  if result.len == 0:
-    result = @["--help"]
 
 
 when isMainModule:
