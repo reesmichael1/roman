@@ -73,11 +73,14 @@ proc main(url: string) {.raises: [].} =
     quit(1)
 
 
-
 when isMainModule:
   var p = newParser("roman"):
-    arg("url")
+    arg("url", help = "url of the feed to show posts from")
     run:
       main(opts.url)
 
-  p.run(collectArgs())
+  try:
+    p.run(collectArgs())
+  except UsageError:
+    let msg = getCurrentExceptionMsg()
+    echo msg
