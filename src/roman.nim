@@ -5,8 +5,8 @@ import strformat
 import xmltree
 
 import argparse
-import feednim
-import feednim / Rss
+import FeedNim
+import FeedNim / rss
 
 
 type RomanError =
@@ -38,7 +38,7 @@ proc displayFeed(feed: Rss) {.raises: [RomanError].} =
 
 proc getFeed(url: string): Rss {.raises: [ValueError, RomanError].} =
   try:
-    result = feednim.getRSS(url)
+    result = FeedNim.getRSS(url)
   except ValueError:
     raise newException(RomanError, &"{url} is not a valid URL")
   except:
