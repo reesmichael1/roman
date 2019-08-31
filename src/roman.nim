@@ -2,7 +2,7 @@ import os
 
 import argparse
 
-import romanpkg / main
+import romanpkg / [main, errors]
 
 
 proc collectArgs(): seq[string] {.raises: [RomanError].} =
