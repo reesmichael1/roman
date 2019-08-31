@@ -1,10 +1,13 @@
 import os
+import parsecsv
 
 import errors
+import feeds
 
 type
   Subscription* = object
     url*: string
+    name*: string
 
 
 proc getSubsFilePath(): string {.raises: [].} =
@@ -24,28 +27,29 @@ proc initConfigDir() {.raises: [RomanError].} =
     raise newException(RomanError, e.msg)
 
 
-proc readConfigFile(): seq[string] {.raises: [RomanError].} =
+proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
   let subsFilePath = getSubsFilePath()
   if not existsFile(subsFilePath):
     initConfigDir()
     return
   try:
-    for line in lines(subsFilePath):
-      result.add(line)
-  except IOError as e:
-    raise newException(RomanError, e.msg)
-
-
-proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
-  for url in readConfigFile():
-    result.add(Subscription(url: url))
+    var p: CsvParser
+    p.open(subsFilePath)
+    while p.readRow():
+      if p.row.len != 2:
+        raise newException(RomanError,
+          "bad line in subscriptions file: " & $p.row)
+      result.add(Subscription(name: p.row[0], url: p.row[1]))
+  except:
+    raise newException(RomanError, getCurrentExceptionMsg())
 
 
 proc addSubscriptionToSubsFile*(url: string) {.raises: [RomanError].} =
-  var f: File
-  let filename = getSubsFilePath()
   try:
+    let feed = getFeed(url)
+    var f: File
+    let filename = getSubsFilePath()
     if f.open(filename, fmAppend):
-      f.writeLine(url)
+      f.writeLine(feed.title & "," & url)
   except IOError as e:
     raise newException(RomanError, e.msg)

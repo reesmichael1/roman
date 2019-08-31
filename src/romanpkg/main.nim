@@ -17,12 +17,14 @@ proc runMainPath() {.raises: [RomanError].} =
       "Use --subscribe [url] to add some."
     return
   elif subs.len == 1:
-    feed = getFeed(subs[0])
+    feed = getFeed(subs[0].url)
   else:
-    let urls = map(subs, proc(s: Subscription): string = s.url)
+    let feedNames = map(subs, proc(s: Subscription): string = s.name)
     try:
-      let sub = promptList("Select Feed [Tab/Enter]", urls)
-      feed = getFeed(Subscription(url: sub))
+      let name = promptList("Select Feed [Tab/Enter]", feedNames)
+      let url = filter(subs,
+        proc(s: Subscription): bool = s.name == name)[0].url
+      feed = getFeed(url)
     except ValueError as e:
       raise newException(RomanError, e.msg)
     except IOError as e:

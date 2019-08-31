@@ -8,7 +8,6 @@ import FeedNim
 import FeedNim / rss
 
 import errors
-import subscriptions
 
 
 proc extractBody(body: string): string {.raises: [RomanError].} =
@@ -41,12 +40,12 @@ proc displayFeed*(feed: Rss) {.raises: [RomanError].} =
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(sub: Subscription): Rss {.raises: [RomanError].} =
+proc getFeed*(url: string): Rss {.raises: [RomanError].} =
   try:
-    result = FeedNim.getRSS(sub.url)
+    result = FeedNim.getRSS(url)
   except ValueError:
-    raise newException(RomanError, sub.url & " is not a valid URL")
+    raise newException(RomanError, url & " is not a valid URL")
   except:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError,
-      "error while accessing " & sub.url & ": " & msg)
+      "error while accessing " & url & ": " & msg)
