@@ -8,10 +8,12 @@ A simple CLI RSS feed reader.
 
 ## Usage
 
-Currently, `roman` only displays the current entries available in a feed passed as a parameter. For example, 
+Currently, `roman` only displays the current entries available in a feeds the user is subscribed to.
+
+To subscribe to feeds, put the URLs in `$HOME/.config/roman/subscriptions`, each on their own line. Then, when you run `roman`, you should see: 
 
 ```
-roman https://website.tld/feed.rss
+Example Feed
 
 Post Title
 Here is the entry of the post. 
@@ -20,7 +22,7 @@ Second Post
 Here is another post.
 ```
 
-Several improvements are planned, such as the ability to subscribe to feeds and mark posts as read.
+Several improvements are planned, such as the ability to subscribe to feeds through the UI and to mark posts as read.
 
 ## Contributing
 

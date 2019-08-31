@@ -1,12 +1,15 @@
 import htmlparser
 import streams
 import strformat
+import terminal
 import xmltree
 
+import fab
 import FeedNim
 import FeedNim / rss
 
 import errors
+import subscriptions
 
 
 proc extractBody(body: string): string {.raises: [RomanError].} =
@@ -25,18 +28,22 @@ proc extractBody(body: string): string {.raises: [RomanError].} =
     raise newException(RomanError, "could not parse html")
 
 
-proc displayFeed*(feed: Rss) {.raises: [RomanError].} =
-  for item in feed.items:
-    echo item.title
-    let body = extractBody(item.description)
-    echo body, "\n\n"
-
-
-proc getFeed*(url: string): Rss {.raises: [ValueError, RomanError].} =
+proc displayFeed*(feed: Rss) {.raises: [RomanError, ValueError].} =
   try:
-    result = FeedNim.getRSS(url)
+    under(&"{feed.title}\n", sty = {styleBright})
+    for item in feed.items:
+      bold(item.title)
+      let body = extractBody(item.description)
+      echo body, "\n\n"
+  except IOError as e:
+    raise newException(RomanError, &"could not write to the terminal: {e.msg}")
+
+
+proc getFeed*(sub: Subscription): Rss {.raises: [ValueError, RomanError].} =
+  try:
+    result = FeedNim.getRSS(sub.url)
   except ValueError:
-    raise newException(RomanError, &"{url} is not a valid URL")
+    raise newException(RomanError, &"{sub.url} is not a valid URL")
   except:
     let msg = getCurrentExceptionMsg()
-    raise newException(RomanError, &"error while accessing {url}: {msg}")
+    raise newException(RomanError, &"error while accessing {sub.url}: {msg}")
