@@ -1,5 +1,4 @@
 import os
-import strformat
 
 import errors
 
@@ -8,17 +7,15 @@ type
     url*: string
 
 
-proc readConfigFile(): seq[string] {.raises: [RomanError, ValueError].} =
+proc readConfigFile(): seq[string] {.raises: [RomanError].} =
   let configFile = joinPath(getConfigDir(), "roman", "subscriptions")
   try:
     for line in lines(configFile):
       result.add(line)
   except IOError as e:
-    raise newException(RomanError,
-      &"could not read config file at {configFile}: {e.msg}")
+    raise newException(RomanError, e.msg)
 
 
-proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError,
-    ValueError].} =
+proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
   for url in readConfigFile():
     result.add(Subscription(url: url))
