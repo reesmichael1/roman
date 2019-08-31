@@ -33,7 +33,6 @@ proc displayFeed*(feed: Rss) {.raises: [RomanError].} =
     echo feed.title & "\n"
     for item in feed.items:
       bold(item.title)
-      echo item.title
       let body = extractBody(item.description)
       echo body, "\n\n"
   except IOError as e:
