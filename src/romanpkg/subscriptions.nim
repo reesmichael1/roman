@@ -47,6 +47,11 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
 proc addSubscriptionToSubsFile*(url: string) {.raises: [RomanError].} =
   try:
     let feed = getFeed(url)
+    let subscription = Subscription(name: feed.title, url: url)
+    let subs = getSubscriptions()
+    if subscription in subs:
+      raise newException(RomanError,
+        "you are already subscribed to " & url & "!")
     var f: File
     let filename = getSubsFilePath()
     if f.open(filename, fmAppend):
