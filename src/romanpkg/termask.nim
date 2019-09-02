@@ -77,7 +77,11 @@ proc promptList*(question: string, args: openarray[string]): string {.raises: [
         break
       of '\3':
         showCursor(stdout)
-        echo "\n"
+        # Move the cursor down to the end of the arguments list
+        # so that after the interrupt, the error message is displayed
+        # on its own line
+        for _ in (selectedIx mod args.len)..args.len:
+          cursorDown(stdout)
         raise newException(ValueError, "no value selected")
       else: discard
 
