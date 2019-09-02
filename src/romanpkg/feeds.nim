@@ -33,7 +33,7 @@ proc getFeed*(url: string): Feed {.raises: [RomanError].} =
     let rssFeed = FeedNim.getRSS(url)
     result.title = rssFeed.title
     result.posts = map(rssFeed.items,
-      proc (i: RSSITem): Post = postFromRSSItem(i))
+      proc (i: RSSItem): Post = postFromRSSItem(i))
   except ValueError:
     raise newException(RomanError, url & " is not a valid URL")
   except:
