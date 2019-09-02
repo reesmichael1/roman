@@ -22,7 +22,7 @@ requires "nim >= 0.20.0"
 # Tasks
 
 task run, "Compile and run (release mode)":
-    exec "nimble c -r -d:release src/roman.nim"
+    exec "nimble c -r -d:release -o:bin/release/roman src/roman.nim"
 
 task debug, "Compile and run (debug mode)":
-    exec "nimble c -r -d:debug src/roman.nim"
+    exec "nimble c -r -d:debug -o:bin/debug/roman src/roman.nim"
