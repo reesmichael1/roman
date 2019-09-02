@@ -1,8 +1,6 @@
 import os
 import sequtils
 
-import FeedNim / rss
-
 import errors
 import feeds
 import subscriptions
@@ -11,7 +9,7 @@ import termask
 
 proc runMainPath() {.raises: [RomanError].} =
   let subs = getSubscriptions()
-  var feed: Rss
+  var feed: Feed
   if subs.len == 0:
     echo "You aren't subscribed to any feeds yet! ",
       "Use --subscribe [url] to add some."

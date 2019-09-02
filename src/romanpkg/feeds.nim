@@ -1,48 +1,39 @@
-import htmlparser
-import streams
+import sequtils
 import terminal
-import xmltree
 
 import fab
 import FeedNim
 import FeedNim / rss
 
 import errors
+import posts
 
 
-proc extractBody(body: string): string {.raises: [RomanError].} =
-  let strm = newStringStream(body)
-  try:
-    let tree = htmlparser.parseHtml(strm)
-    # Very simple method to just extract all of the text nodes.
-    # This will be refined.
-    for node in tree:
-      case node.kind
-      of xnText:
-        result &= $node
-      else:
-        continue
-  except:
-    raise newException(RomanError, "could not parse html")
+type
+  Feed* = object
+    posts*: seq[Post]
+    title*: string
 
 
-proc displayFeed*(feed: Rss) {.raises: [RomanError].} =
+proc displayFeed*(feed: Feed) {.raises: [RomanError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
     echo feed.title & "\n"
-    for item in feed.items:
-      bold(item.title)
-      let body = extractBody(item.description)
-      echo body, "\n\n"
+    for post in feed.posts:
+      bold(post.title)
+      echo post.content, "\n\n"
   except IOError as e:
     raise newException(RomanError, "could not write to the terminal: " & e.msg)
   except ValueError as e:
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(url: string): Rss {.raises: [RomanError].} =
+proc getFeed*(url: string): Feed {.raises: [RomanError].} =
   try:
-    result = FeedNim.getRSS(url)
+    let rssFeed = FeedNim.getRSS(url)
+    result.title = rssFeed.title
+    result.posts = map(rssFeed.items,
+      proc (i: RSSITem): Post = postFromRSSItem(i))
   except ValueError:
     raise newException(RomanError, url & " is not a valid URL")
   except:
