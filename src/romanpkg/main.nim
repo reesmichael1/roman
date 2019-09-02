@@ -33,18 +33,10 @@ proc runMainPath() {.raises: [RomanError].} =
   displayFeed(feed)
 
 
-proc addSubscription(url: string) {.raises: [RomanError].} =
-  try:
-    addSubscriptionToSubsFile(url)
-  except RomanError as e:
-    echo "error: ", e.msg
-    raise e
-
-
 proc main*(subscribeURL: string = "") {.raises: [].} =
   try:
     if subscribeURL != "":
-      addSubscription(subscribeURL)
+      addSubscriptionToSubsFile(subscribeURL)
     else:
       runMainPath()
   except RomanError as e:
