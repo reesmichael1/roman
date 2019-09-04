@@ -19,7 +19,7 @@ proc runMainPath() {.raises: [RomanError].} =
   else:
     let feedNames = map(subs, proc(s: Subscription): string = s.name)
     try:
-      let name = promptList("Select Feed", feedNames)
+      let name = promptList("Select Feed", feedNames, show = 10)
       let url = filter(subs,
         proc(s: Subscription): bool = s.name == name)[0].url
       feed = getFeed(url)

@@ -20,7 +20,7 @@ proc displayFeed*(feed: Feed) {.raises: [RomanError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
     let titles = map(feed.posts, proc(p: Post): string = p.title)
-    let title = promptList("Select Post", titles)
+    let title = promptList("Select Post", titles, show = 10)
     let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
     bold(post.title)
     echo post.content, "\n\n"
