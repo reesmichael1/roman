@@ -1,3 +1,4 @@
+import algorithm
 import os
 import parsecsv
 
@@ -40,6 +41,8 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
         raise newException(RomanError,
           "bad line in subscriptions file: " & $p.row)
       result.add(Subscription(name: p.row[0], url: p.row[1]))
+
+    result.sort(proc(a, b: Subscription): int = cmp(a.name, b.name))
   except:
     raise newException(RomanError, getCurrentExceptionMsg())
 
