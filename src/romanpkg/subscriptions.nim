@@ -5,6 +5,7 @@ import parsecsv
 import errors
 import feeds
 
+
 type
   Subscription* = object
     url*: string
@@ -13,7 +14,6 @@ type
 
 proc getSubsFilePath(): string {.raises: [].} =
   joinPath(getConfigDir(), "roman", "subscriptions")
-
 
 
 proc initConfigDir() {.raises: [RomanError].} =
