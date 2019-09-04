@@ -1,6 +1,6 @@
 import argparse
 
-import romanpkg / [main, errors]
+import romanpkg / main
 
 
 when isMainModule:
