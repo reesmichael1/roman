@@ -15,9 +15,19 @@ type
   Feed* = object
     posts*: seq[Post]
     title*: string
+    unreadPosts*: int
 
 
-proc displayFeed*(feed: Feed) {.raises: [RomanError].} =
+proc updateUnread*(feed: var Feed) {.raises: [].} =
+  feed.unreadPosts = filter(feed.posts, proc(p: Post): bool = not p.read).len
+
+
+# Show the number of unread posts in the feed display
+proc formatTitle*(feed: Feed): string {.raises: [].} =
+  feed.title & " [" & $feed.unreadPosts & "/" & $feed.posts.len & "]"
+
+
+proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
 
@@ -33,6 +43,7 @@ proc displayFeed*(feed: Feed) {.raises: [RomanError].} =
     bold(post.title)
     echo post.content, "\n\n"
     post.markAsRead()
+    feed.updateUnread()
   except IOError as e:
     raise newException(RomanError, "could not write to the terminal: " & e.msg)
   except ValueError as e:
@@ -45,6 +56,7 @@ proc getFeed*(url: string): Feed {.raises: [RomanError].} =
     result.title = rssFeed.title
     result.posts = map(rssFeed.items,
       proc (i: RSSItem): Post = postFromRSSItem(i))
+    result.updateUnread()
   except ValueError:
     raise newException(RomanError, url & " is not a valid URL")
   except:
