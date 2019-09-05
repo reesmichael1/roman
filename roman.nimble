@@ -16,6 +16,7 @@ requires "argparse >= 0.8"
 requires "fab >= 0.4"
 requires "feednim >= 0.2"
 requires "nim >= 0.20.0"
+requires "nimpy >= 0.1"
 
 
 

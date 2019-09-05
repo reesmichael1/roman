@@ -6,17 +6,7 @@ A simple CLI RSS feed reader.
 
 `roman` is written in [Nim](https://nim-lang.org). Binaries are not yet available, so you will need to build from source. With `nim 0.20` installed, you should simply need to run `nimble build`. 
 
-`roman` uses a patched version of [`html2text`](https://github.com/jugglerchris/rust-html2text) to display post bodies. You will need to have [Rust](https://rust-lang.org) installed to build this as well. 
-
-```
-git clone https://github.com/jugglerchris/rust-html2text
-cd rust-html2text
-# copy patches/html2text.patch from this repository to rust-html2text
-patch -p1 < html2text.patch 
-cargo build --release
-```
-
-Then, copy `target/release/libhtml2text.so` to somewhere where your linker can find it. 
+`roman` uses [`html2text`](http://alir3z4.github.io/html2text/) to display post bodies. You will need to have it installed on your system.
 
 ## Usage
 
