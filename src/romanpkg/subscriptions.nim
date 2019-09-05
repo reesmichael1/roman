@@ -4,28 +4,13 @@ import parsecsv
 
 import errors
 import feeds
+import paths
 
 
 type
   Subscription* = object
     url*: string
     name*: string
-
-
-proc getSubsFilePath(): string {.raises: [].} =
-  joinPath(getConfigDir(), "roman", "subscriptions")
-
-
-proc initConfigDir() {.raises: [RomanError].} =
-  let configDir = joinPath(getConfigDir(), "roman")
-  try:
-    if not existsOrCreateDir(configDir):
-      let subsFile = joinPath(configDir, "subscriptions")
-      writeFile(subsFile, "")
-  except OSError as e:
-    raise newException(RomanError, e.msg)
-  except IOError as e:
-    raise newException(RomanError, e.msg)
 
 
 proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =

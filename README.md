@@ -28,9 +28,13 @@ To subscribe to feeds, use the `--subscribe` flag. For example,
 roman --subscribe https://feedwebsite.com/feed.rss
 ```
 
-Then, when you run `roman`, you will be able to select a feed and post to view.
+Then, when you run `roman`, you will be able to select a feed and post to view. Unread posts are marked as `[*]`. 
 
-Several improvements are planned, such as keeping track of read/unread posts.
+`roman` is still in very early development. Several improvements are planned!
+
+## Platforms
+
+Cross-platform support is fully intended, but for now, `roman` is only tested on Linux. (Most of the code should work just fine, but some filepaths that are generated are currently Linux-only. A patch would be happily accepted!)
 
 ## Contributing
 

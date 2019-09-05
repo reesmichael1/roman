@@ -1,6 +1,7 @@
 import sequtils
 import strutils
 import terminal
+import tables
 
 import fab
 
@@ -40,7 +41,8 @@ import errors
 #   2243e3fbc2dd277ad81df5d795307bf8389b9240/src/nimblepkg/cli.nim#L177
 
 proc promptList*(question: string, args: openarray[string],
-    show: int = -1): string {.raises: [ValueError, IOError].} =
+    displayNames: Table[string, string] = initTable[string, string](),
+        show: int = -1): string {.raises: [ValueError, IOError].} =
   var
     selectedIx = 0
     selectionMade = false
@@ -77,11 +79,16 @@ proc promptList*(question: string, args: openarray[string],
 
     let width = terminalWidth()
     for ix, arg in currentArgs:
-      if ix == selectedIx:
-        writeStyled("> " & arg & " <", {styleBright})
+      var shown: string
+      if arg in displayNames:
+        shown = displayNames[arg]
       else:
-        writeStyled("  " & arg & "  ", {styleDim})
-      let displayLen = arg.len + 4
+        shown = arg
+      if ix == selectedIx:
+        writeStyled("> " & shown & " <", {styleBright})
+      else:
+        writeStyled("  " & shown & "  ", {styleDim})
+      let displayLen = shown.len + 4
       let paddingLen = width - displayLen
       if paddingLen > 0:
         stdout.write(repeat(' ', paddingLen))
