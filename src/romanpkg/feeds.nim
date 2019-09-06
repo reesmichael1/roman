@@ -1,6 +1,7 @@
 import sequtils
 import tables
 import terminal
+import threadpool
 
 import fab
 import FeedNim
@@ -50,12 +51,14 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(url: string): Feed {.raises: [RomanError].} =
+proc getFeed*(url: string): Feed {.raises: [RomanError], thread.} =
   try:
     let rssFeed = FeedNim.getRSS(url)
     result.title = rssFeed.title
-    result.posts = map(rssFeed.items,
-      proc (i: RSSItem): Post = postFromRSSItem(i))
+    for item in rssFeed.items:
+      result.posts.add(postFromRSSItem(item))
+    # result.posts = map(rssFeed.items,
+    #   proc (i: RSSItem): Post = postFromRSSItem(i))
     result.updateUnread()
   except ValueError:
     raise newException(RomanError, url & " is not a valid URL")
@@ -63,3 +66,6 @@ proc getFeed*(url: string): Feed {.raises: [RomanError].} =
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError,
       "error while accessing " & url & ": " & msg)
+
+
+# proc getFeedAsync*(url: string): Future[Feed] {.async, raises: [].} =

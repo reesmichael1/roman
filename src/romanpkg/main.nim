@@ -1,6 +1,7 @@
 import os
 import sequtils
 import tables
+import threadpool
 
 import errors
 import feeds
@@ -32,7 +33,9 @@ proc runMainPath() {.raises: [RomanError].} =
   elif subs.len == 1:
     feed = getFeed(subs[0].url)
   else:
-    let feeds = map(subs, proc(s: Subscription): Feed = getFeed(s.url))
+    let feedResults = map(subs, proc(s: Subscription): FlowVar[
+        Feed] = spawn getFeed(s.url))
+    let feeds = map(feedResults, proc(fv: FlowVar[Feed]): Feed = ^fv)
     feed = chooseFeed(feeds)
 
   displayFeed(feed)
