@@ -40,6 +40,42 @@ import errors
 # https://github.com/nim-lang/nimble/blob/
 #   2243e3fbc2dd277ad81df5d795307bf8389b9240/src/nimblepkg/cli.nim#L177
 
+
+proc goDown(selectedIx: var int, currentArgs: seq[string]) {.raises: [].} =
+  selectedIx = (selectedIx + 1) mod currentArgs.len
+
+
+proc goUp(selectedIx: var int, currentArgs: seq[string]) {.raises: [].} =
+  if selectedIx == 0:
+    selectedIx = currentArgs.len - 1
+  else:
+    selectedIx -= 1
+
+
+proc advancePage(currentArgs: var seq[string], selectedIx: var int,
+    sliceIx: var int, argSlices: seq[seq[string]]) {.raises: [].} =
+  if argSlices.len == 1:
+    return
+  # Advance to the next set of results and reset
+  sliceIx += 1
+  if sliceIx >= argSlices.len:
+    sliceIx = 0
+  selectedIx = 0
+  currentArgs = argSlices[sliceIx]
+
+
+proc goBackPage(currentArgs: var seq[string], selectedIx: var int,
+    sliceIx: var int, argSlices: seq[seq[string]]) {.raises: [].} =
+  if argSlices.len == 1:
+    return
+  # Go back to the last set of results and reset
+  sliceIx -= 1
+  if sliceIx <= 0:
+    sliceIx = argSlices.len - 1
+  selectedIx = 0
+  currentArgs = argSlices[sliceIx]
+
+
 proc promptList*(question: string, args: openarray[string],
     displayNames: Table[string, string] = initTable[string, string](),
         show: int = -1): string {.raises: [ValueError, IOError].} =
@@ -75,7 +111,8 @@ proc promptList*(question: string, args: openarray[string],
     setForegroundColor(fgDefault)
     if argSlices.len > 1:
       cursorUp(stdout)
-      echo "[", sliceIx + 1, "/", argSlices.len, "] N to advance, P to go back"
+      echo "[", sliceIx + 1, "/", argSlices.len,
+        "] N/Right to advance, P/Left to go back"
 
     let width = terminalWidth()
     for ix, arg in currentArgs:
@@ -104,13 +141,10 @@ proc promptList*(question: string, args: openarray[string],
       let c = getch()
       case c:
       of 'j': # go down
-        selectedIx = (selectedIx + 1) mod currentArgs.len
+        goDown(selectedIx, currentArgs)
         break
       of 'k': # go up
-        if selectedIx == 0:
-          selectedIx = currentArgs.len - 1
-        else:
-          selectedIx -= 1
+        goUp(selectedIx, currentArgs)
         break
       # Handle arrow keys
       of chr(27):
@@ -118,37 +152,26 @@ proc promptList*(question: string, args: openarray[string],
         discard getch()
         case getch():
         of 'A': # up arrow
-          if selectedIx == 0:
-            selectedIx = currentArgs.len - 1
-          else:
-            selectedIx -= 1
+          goUp(selectedIx, currentArgs)
           break
         of 'B': # down arrow
-          selectedIx = (selectedIx + 1) mod currentArgs.len
+          goDown(selectedIx, currentArgs)
+          break
+        of 'C': # right arrow
+          advancePage(currentArgs, selectedIx, sliceIx, argSlices)
+          break
+        of 'D': # left arrow
+          goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
           break
         else: break
       of '\r':
         selectionMade = true
         break
       of 'N':
-        if argSlices.len == 1:
-          break
-        # Advance to the next set of results and reset
-        sliceIx += 1
-        if sliceIx >= argSlices.len:
-          sliceIx = 0
-        selectedIx = 0
-        currentArgs = argSlices[sliceIx]
+        advancePage(currentArgs, selectedIx, sliceIx, argSlices)
         break
       of 'P':
-        if argSlices.len == 1:
-          break
-        # Go back to the last set of results and reset
-        sliceIx -= 1
-        if sliceIx <= 0:
-          sliceIx = argSlices.len - 1
-        selectedIx = 0
-        currentArgs = argSlices[sliceIx]
+        goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
         break
       of '\3':
         showCursor(stdout)
