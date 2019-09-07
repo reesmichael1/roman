@@ -101,10 +101,32 @@ proc promptList*(question: string, args: openarray[string],
     resetAttributes(stdout)
 
     while true:
-      case getch():
-      of '\t':
+      let c = getch()
+      case c:
+      of 'j': # go down
         selectedIx = (selectedIx + 1) mod currentArgs.len
         break
+      of 'k': # go up
+        if selectedIx == 0:
+          selectedIx = currentArgs.len - 1
+        else:
+          selectedIx -= 1
+        break
+      # Handle arrow keys
+      of chr(27):
+        # Skip the useless [
+        discard getch()
+        case getch():
+        of 'A': # up arrow
+          if selectedIx == 0:
+            selectedIx = currentArgs.len - 1
+          else:
+            selectedIx -= 1
+          break
+        of 'B': # down arrow
+          selectedIx = (selectedIx + 1) mod currentArgs.len
+          break
+        else: break
       of '\r':
         selectionMade = true
         break
@@ -136,7 +158,7 @@ proc promptList*(question: string, args: openarray[string],
         for _ in (selectedIx mod currentArgs.len)..currentArgs.len:
           cursorDown(stdout)
         raise newException(ValueError, "no value selected")
-      else: discard
+      else: break
 
   for i in 0..<currentArgs.len:
     eraseLine(stdout)
