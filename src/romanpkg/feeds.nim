@@ -40,8 +40,7 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
     let title = promptList("Select Post", titles, show = 10,
         displayNames = display)
     let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
-    bold(post.title)
-    echo post.content, "\n\n"
+    displayPost(post)
     post.markAsRead()
     feed.updateUnread()
   except IOError as e:

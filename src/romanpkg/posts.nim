@@ -1,6 +1,10 @@
 import os
+import strutils
+import terminal
 
+import fab
 import FeedNim / rss
+import pager
 
 import errors
 import htmlextractor
@@ -36,6 +40,19 @@ proc collectReadPosts(): seq[string] {.raises: [RomanError].} =
 
 proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
   return itemGUID in collectReadPosts()
+
+
+proc displayPost*(p: Post) {.raises: [RomanError].} =
+  try:
+    # Height of the content plus a line and blank line for the title
+    if p.content.countLines() + 2 > terminalHeight():
+      page(p.title & "\n\n" & p.content)
+    else:
+      bold(p.title)
+      echo p.content
+  except IOError, ValueError:
+    let msg = getCurrentExceptionMsg()
+    raise newException(RomanError, "could not write to the terminal: " & msg)
 
 
 proc postFromRSSItem*(item: RSSItem): Post {.raises: [
