@@ -1,3 +1,4 @@
+import options
 import sequtils
 import strutils
 import terminal
@@ -70,7 +71,7 @@ proc goBackPage(currentArgs: var seq[string], selectedIx: var int,
     return
   # Go back to the last set of results and reset
   sliceIx -= 1
-  if sliceIx <= 0:
+  if sliceIx < 0:
     sliceIx = argSlices.len - 1
   selectedIx = 0
   currentArgs = argSlices[sliceIx]
@@ -78,7 +79,7 @@ proc goBackPage(currentArgs: var seq[string], selectedIx: var int,
 
 proc promptList*(question: string, args: openarray[string],
     displayNames: Table[string, string] = initTable[string, string](),
-        show: int = -1): string {.raises: [ValueError, IOError].} =
+        show: int = -1): Option[string] {.raises: [ValueError, IOError].} =
   var
     selectedIx = 0
     selectionMade = false
@@ -91,9 +92,12 @@ proc promptList*(question: string, args: openarray[string],
     if args.len <= show:
       argSlices = @[toSeq(args)]
     else:
+      # Split the arguments into chunks of length show
+      # Store those chunks in argSlices
       var counter = 0
       while counter < args.len:
-        let top = min(counter + show, args.len - 1)
+        # Subtract 2 because both counter and show are 1 indexed
+        let top = min(counter + show - 1, args.len - 1)
         let nextArgs = args[counter..top]
         argSlices.add(nextArgs)
         counter += show
@@ -173,6 +177,8 @@ proc promptList*(question: string, args: openarray[string],
       of 'P':
         goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
         break
+      of 'q':
+        return none(string)
       of '\3':
         showCursor(stdout)
         # Move the cursor down to the end of the arguments list
@@ -189,4 +195,4 @@ proc promptList*(question: string, args: openarray[string],
   for i in 0..<currentArgs.len():
     cursorUp(stdout)
   showCursor(stdout)
-  return currentArgs[selectedIx]
+  return some(currentArgs[selectedIx])

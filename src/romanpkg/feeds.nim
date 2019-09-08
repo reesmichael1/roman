@@ -1,3 +1,4 @@
+import options
 import sequtils
 import tables
 import terminal
@@ -27,7 +28,7 @@ proc formatTitle*(feed: Feed): string {.raises: [].} =
   feed.title & " [" & $feed.unreadPosts & "/" & $feed.posts.len & "]"
 
 
-proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
+proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
 
@@ -37,8 +38,11 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
       display[p.title] = p.formatTitle()
       titles.add(p.title)
 
-    let title = promptList("Select Post", titles, show = 10,
+    let selectedTitle = promptList("Select Post", titles, show = 10,
         displayNames = display)
+    if selectedTitle.isNone():
+      raise newException(InterruptError, "no feed selected")
+    let title = selectedTitle.unsafeGet()
     let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
     displayPost(post)
     post.markAsRead()
