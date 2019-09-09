@@ -3,6 +3,10 @@ import os
 import errors
 
 
+proc getConfigFilePath*(): string {.raises: [].} =
+  joinPath(getConfigDir(), "roman", "config")
+
+
 proc getSubsFilePath*(): string {.raises: [].} =
   joinPath(getConfigDir(), "roman", "subscriptions")
 
@@ -11,8 +15,10 @@ proc initConfigDir*() {.raises: [RomanError].} =
   let configDir = joinPath(getConfigDir(), "roman")
   try:
     if not existsOrCreateDir(configDir):
-      let subsFile = joinPath(configDir, "subscriptions")
-      writeFile(subsFile, "")
+      let config = getConfigFilePath()
+      let subs = getSubsFilePath()
+      writeFile(config, "")
+      writeFile(subs, "")
   except OSError as e:
     raise newException(RomanError, e.msg)
   except IOError as e:

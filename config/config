@@ -1,0 +1,8 @@
+[Keyboard]
+# The config values for keyboard navigation. 
+# By default, we use vi keybindings.
+down=j
+up=k
+next=n
+previous=p
+quit=q

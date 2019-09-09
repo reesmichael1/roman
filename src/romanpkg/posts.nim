@@ -10,15 +10,7 @@ import errors
 import htmlextractor
 import paths
 
-
-type
-  # Use our own Post type instead of RSSItem
-  # to show metadata we collect (e.g., read/unread)
-  Post* = object
-    title*: string
-    content*: string
-    guid*: string
-    read*: bool
+from types import Post
 
 
 proc formatTitle*(p: Post): string {.raises: [].} =
@@ -55,8 +47,7 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
     raise newException(RomanError, "could not write to the terminal: " & msg)
 
 
-proc postFromRSSItem*(item: RSSItem): Post {.raises: [
-    RomanError].} =
+proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
   result.title = item.title
   result.content = extractBody(item.description)
   result.guid = item.guid

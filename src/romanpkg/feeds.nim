@@ -11,12 +11,7 @@ import errors
 import posts
 import termask
 
-
-type
-  Feed* = object
-    posts*: seq[Post]
-    title*: string
-    unreadPosts*: int
+from types import Feed, Post, Subscription
 
 
 proc updateUnread*(feed: var Feed) {.raises: [].} =
@@ -53,16 +48,19 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(url: string): Feed {.raises: [RomanError].} =
+proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
   try:
-    let rssFeed = FeedNim.getRSS(url)
-    result.title = rssFeed.title
+    let rssFeed = FeedNim.getRSS(sub.url)
+    if sub.name.len > 0:
+      result.title = sub.name
+    else:
+      result.title = rssFeed.title
     result.posts = map(rssFeed.items,
       proc (i: RSSItem): Post = postFromRSSItem(i))
     result.updateUnread()
   except ValueError:
-    raise newException(RomanError, url & " is not a valid URL")
+    raise newException(RomanError, sub.url & " is not a valid URL")
   except:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError,
-      "error while accessing " & url & ": " & msg)
+      "error while accessing " & sub.url & ": " & msg)

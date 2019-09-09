@@ -22,6 +22,10 @@ Then, when you run `roman`, you will be able to select a feed and post to view. 
 
 `roman` is still in very early development. Several improvements are planned!
 
+## Configuration
+
+You will need to copy the `config/config` file in this repository to `roman/config` within your platform's standard config directory. You can change the values in the file to your taste. 
+
 ## Platforms
 
 Cross-platform support is fully intended, but for now, `roman` is only tested on Linux. (Most of the code should work just fine, but some filepaths that are generated are currently Linux-only. A patch would be happily accepted!)

@@ -8,6 +8,8 @@ import feeds
 import subscriptions
 import termask
 
+from types import Feed, Subscription
+
 
 proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
     InterruptError].} =
@@ -36,10 +38,10 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
       "Use --subscribe [url] to add some."
     return
   elif subs.len == 1:
-    feed = getFeed(subs[0].url)
+    feed = getFeed(subs[0])
     feeds = @[feed]
   else:
-    feeds = map(subs, proc(s: Subscription): Feed = getFeed(s.url))
+    feeds = map(subs, getFeed)
 
   while true:
     if feeds.len == 1:

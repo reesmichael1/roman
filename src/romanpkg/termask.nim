@@ -8,6 +8,9 @@ import fab
 
 import errors
 
+from config import conf
+from types import RomanConfig
+
 
 # This function was originally based on the promptListInteractive function
 # in Nimble, and is therefore under the same license.
@@ -114,9 +117,7 @@ proc promptList*(question: string, args: openarray[string],
   while not selectionMade:
     setForegroundColor(fgDefault)
     if argSlices.len > 1:
-      cursorUp(stdout)
-      echo "[", sliceIx + 1, "/", argSlices.len,
-        "] N/Right to advance, P/Left to go back"
+      echo "[", sliceIx + 1, "/", argSlices.len, "]"
 
     let width = terminalWidth()
     for ix, arg in currentArgs:
@@ -143,15 +144,15 @@ proc promptList*(question: string, args: openarray[string],
 
     while true:
       let c = getch()
-      case c:
-      of 'j': # go down
+      # Use ifs instead of case because case requires known values at comptime
+      if c == conf.down: # go down
         goDown(selectedIx, currentArgs)
         break
-      of 'k': # go up
+      elif c == conf.up: # go up
         goUp(selectedIx, currentArgs)
         break
       # Handle arrow keys
-      of chr(27):
+      elif c == chr(27):
         # Skip the useless [
         discard getch()
         case getch():
@@ -168,18 +169,18 @@ proc promptList*(question: string, args: openarray[string],
           goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
           break
         else: break
-      of '\r':
+      elif c == '\r':
         selectionMade = true
         break
-      of 'N':
+      elif c == conf.next:
         advancePage(currentArgs, selectedIx, sliceIx, argSlices)
         break
-      of 'P':
+      elif c == conf.previous:
         goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
         break
-      of 'q':
+      elif c == conf.quit:
         return none(string)
-      of '\3':
+      elif c == '\3':
         showCursor(stdout)
         # Move the cursor down to the end of the arguments list
         # so that after the interrupt, the error message is displayed
