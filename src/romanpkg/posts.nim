@@ -2,7 +2,6 @@ import os
 import strutils
 import terminal
 
-import fab
 import FeedNim / rss
 import pager
 
@@ -36,12 +35,7 @@ proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
 
 proc displayPost*(p: Post) {.raises: [RomanError].} =
   try:
-    # Height of the content plus a line and blank line for the title
-    if p.content.countLines() + 2 > terminalHeight():
-      page(p.title & "\n\n" & p.content)
-    else:
-      bold(p.title)
-      echo p.content
+    page(p.title & "\n\n" & p.content)
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)
