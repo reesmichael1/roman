@@ -80,6 +80,10 @@ proc goBackPage(currentArgs: var seq[string], selectedIx: var int,
   currentArgs = argSlices[sliceIx]
 
 
+proc showArgPages(sliceIx: int, argSlices: seq[seq[string]]) {.raises: [].} =
+  echo "\n[", sliceIx + 1, "/", argSlices.len, "]"
+
+
 proc promptList*(question: string, args: openarray[string],
     displayNames: Table[string, string] = initTable[string, string](),
         show: int = -1): Option[string] {.raises: [ValueError, IOError].} =
@@ -107,6 +111,9 @@ proc promptList*(question: string, args: openarray[string],
 
   que(question, fg = fgDefault)
 
+  if argSlices.len > 1:
+    showArgPages(sliceIx, argSlices)
+
   var currentArgs = argSlices[sliceIx]
   for arg in currentArgs:
     stdout.write "\n"
@@ -117,7 +124,8 @@ proc promptList*(question: string, args: openarray[string],
   while not selectionMade:
     setForegroundColor(fgDefault)
     if argSlices.len > 1:
-      echo "[", sliceIx + 1, "/", argSlices.len, "]"
+      cursorUp(stdout, 2)
+      showArgPages(sliceIx, argSlices)
 
     let width = terminalWidth()
     for ix, arg in currentArgs:
@@ -137,7 +145,7 @@ proc promptList*(question: string, args: openarray[string],
         for s in 0..<(width):
           cursorBackward(stdout)
       cursorDown(stdout)
-    for i in 0..<(currentArgs.len()):
+    for i in 0..<currentArgs.len():
       cursorUp(stdout)
 
     resetAttributes(stdout)
