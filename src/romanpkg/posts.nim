@@ -12,11 +12,21 @@ import paths
 from types import Post
 
 
-proc formatTitle*(p: Post): string {.raises: [].} =
+proc formatTitle*(p: Post): string {.raises: [RomanError].} =
+  var width: int
+  try:
+    width = terminalWidth()
+  except ValueError:
+    raise newException(RomanError, "could not get terminal width")
   if p.read:
     result = p.title
   else:
     result = "[*] " & p.title
+
+  if result.len > width:
+    # 3 for the ellipsis, 4 for the '> ' before and after the printing,
+    # 2 for padding
+    result = result[0..<width-9] & "..."
 
 
 proc collectReadPosts(): seq[string] {.raises: [RomanError].} =
