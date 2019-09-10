@@ -48,7 +48,12 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
       displayFeed(feed)
     else:
       feed = chooseFeed(feeds)
-      displayFeed(feed)
+      try:
+        displayFeed(feed)
+      except InterruptError:
+        # These errors are coming from declining to select a post
+        # Instead of exiting, return to the feed selection
+        continue
 
 
 proc main*(subscribeURL: string = "") {.raises: [].} =

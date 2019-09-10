@@ -116,7 +116,9 @@ proc promptList*(question: string, args: openarray[string],
 
   var currentArgs = argSlices[sliceIx]
   for arg in currentArgs:
+    eraseLine()
     stdout.write "\n"
+    # cursorDown(stdout)
 
   cursorUp(stdout, currentArgs.len)
   hideCursor(stdout)
@@ -187,6 +189,9 @@ proc promptList*(question: string, args: openarray[string],
         goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
         break
       elif c == conf.quit:
+        for _ in (selectedIx mod currentArgs.len)..currentArgs.len:
+          cursorDown(stdout)
+        echo "\n"
         return none(string)
       elif c == '\3':
         showCursor(stdout)
@@ -195,7 +200,7 @@ proc promptList*(question: string, args: openarray[string],
         # on its own line
         for _ in (selectedIx mod currentArgs.len)..currentArgs.len:
           cursorDown(stdout)
-        raise newException(ValueError, "no value selected")
+        raise newException(ValueError, "keyboard interrupt")
       else: break
 
   for i in 0..<currentArgs.len:

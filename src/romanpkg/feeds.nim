@@ -33,15 +33,16 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
       display[p.title] = p.formatTitle()
       titles.add(p.title)
 
-    let selectedTitle = promptList("Select Post", titles, show = 10,
-        displayNames = display)
-    if selectedTitle.isNone():
-      raise newException(InterruptError, "no feed selected")
-    let title = selectedTitle.unsafeGet()
-    let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
-    displayPost(post)
-    post.markAsRead()
-    feed.updateUnread()
+    while true:
+      let selectedTitle = promptList("Select Post", titles, show = 10,
+          displayNames = display)
+      if selectedTitle.isNone():
+        raise newException(InterruptError, "no post selected")
+      let title = selectedTitle.unsafeGet()
+      let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
+      displayPost(post)
+      post.markAsRead()
+      feed.updateUnread()
   except IOError as e:
     raise newException(RomanError, "could not write to the terminal: " & e.msg)
   except ValueError as e:
