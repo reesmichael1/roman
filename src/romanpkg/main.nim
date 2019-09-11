@@ -14,10 +14,12 @@ from types import Feed, Subscription
 proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
     InterruptError].} =
   var displayNames = initTable[string, string]()
+  var titles: seq[string]
   for feed in feeds:
+    titles.add(feed.title)
     displayNames[feed.title] = feed.formatTitle()
   try:
-    let selectedName = promptList("Select Feed", toSeq(displayNames.keys),
+    let selectedName = promptList("Select Feed", titles,
         displayNames = displayNames, show = 10)
     if selectedName.isNone:
       raise newException(InterruptError, "no feed selected")
@@ -41,6 +43,7 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
     feed = getFeed(subs[0])
     feeds = @[feed]
   else:
+    echo subs
     feeds = map(subs, getFeed)
 
   while true:
