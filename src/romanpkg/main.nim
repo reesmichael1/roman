@@ -43,7 +43,6 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
     feed = getFeed(subs[0])
     feeds = @[feed]
   else:
-    echo subs
     feeds = map(subs, getFeed)
 
   while true:
