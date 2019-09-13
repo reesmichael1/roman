@@ -5,6 +5,7 @@ type
     next*: char
     previous*: char
     quit*: char
+    postWidth*: int
 
   Subscription* = object
     url*: string

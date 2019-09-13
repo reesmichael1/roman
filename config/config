@@ -6,3 +6,9 @@ up=k
 next=n
 previous=p
 quit=q
+
+[Posts]
+# The maximum width for wrapping the posts
+# If this is greater than the terminal width, 
+# words will be wrapped to match the terminal isntead.
+max-width=80

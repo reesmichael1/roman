@@ -1,5 +1,6 @@
 import parsecfg
 import sequtils
+import strutils
 
 import errors
 import paths
@@ -20,6 +21,19 @@ proc strToChar(config: Config, section: string, key: string): char {.
       "missing config value for " & section & "." & key)
 
 
+proc strToInt(config: Config, section: string, key: string): int {.
+    raises: [RomanError].} =
+  try:
+    let s = config.getSectionValue(section, key)
+    result = parseInt(s)
+  except KeyError:
+    raise newException(RomanError,
+      "missing config value for " & section & "." & key)
+  except ValueError:
+    raise newException(RomanError,
+      "invalid value for " & section & "." & key & ", expected int")
+
+
 proc mustLoadConfig*(): RomanConfig {.raises: [].} =
   try:
     let path = getConfigFilePath()
@@ -29,6 +43,7 @@ proc mustLoadConfig*(): RomanConfig {.raises: [].} =
     result.next = strToChar(dict, "Keyboard", "next")
     result.previous = strToChar(dict, "Keyboard", "previous")
     result.quit = strToChar(dict, "Keyboard", "quit")
+    result.postWidth = strToInt(dict, "Posts", "max-width")
   except:
     echo "error loading config file: " & getCurrentExceptionMsg()
     quit(1)
