@@ -8,6 +8,8 @@ type
     next*: char
     previous*: char
     quit*: char
+    goToTop*: char
+    goToBottom*: char
     postWidth*: int
 
   Subscription* = object

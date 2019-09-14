@@ -6,6 +6,8 @@ up=k
 next=n
 previous=p
 quit=q
+top=g
+bottom=G
 
 [Posts]
 # The maximum width for wrapping the posts

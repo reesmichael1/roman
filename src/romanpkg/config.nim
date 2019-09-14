@@ -43,6 +43,8 @@ proc mustLoadConfig*(): RomanConfig {.raises: [].} =
     result.next = strToChar(dict, "Keyboard", "next")
     result.previous = strToChar(dict, "Keyboard", "previous")
     result.quit = strToChar(dict, "Keyboard", "quit")
+    result.goToTop = strToChar(dict, "Keyboard", "top")
+    result.goToBottom = strToChar(dict, "Keyboard", "bottom")
     result.postWidth = strToInt(dict, "Posts", "max-width")
   except:
     echo "error loading config file: " & getCurrentExceptionMsg()

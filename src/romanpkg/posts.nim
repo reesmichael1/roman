@@ -10,6 +10,7 @@ import errors
 import htmlextractor
 import paths
 
+from config import conf
 from types import Post
 
 
@@ -46,10 +47,13 @@ proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
 
 proc displayPost*(p: Post) {.raises: [RomanError].} =
   try:
+    var content: string
     if p.author.isSome:
-      page(p.title & "\n" & p.author.unsafeGet & "\n\n" & p.content)
+      content = p.title & "\n" & p.author.unsafeGet & "\n\n" & p.content
     else:
-      page(p.title & "\n\n" & p.content)
+      content = p.title & "\n\n" & p.content
+    page(content, goToBottom = conf.goToBottom, goToTop = conf.goToTop,
+      upOne = conf.up, downOne = conf.down, quitChar = conf.quit)
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)
