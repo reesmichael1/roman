@@ -1,3 +1,6 @@
+import options
+
+
 type
   RomanConfig* = object
     up*: char
@@ -18,6 +21,7 @@ type
     content*: string
     guid*: string
     read*: bool
+    author*: Option[string]
 
   Feed* = object
     posts*: seq[Post]

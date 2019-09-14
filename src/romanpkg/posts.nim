@@ -1,3 +1,4 @@
+import options
 import os
 import strutils
 import terminal
@@ -45,7 +46,10 @@ proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
 
 proc displayPost*(p: Post) {.raises: [RomanError].} =
   try:
-    page(p.title & "\n\n" & p.content)
+    if p.author.isSome:
+      page(p.title & "\n" & p.author.unsafeGet & "\n\n" & p.content)
+    else:
+      page(p.title & "\n\n" & p.content)
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)
@@ -56,6 +60,8 @@ proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
   result.content = extractBody(item.description)
   result.guid = item.guid
   result.read = isPostRead(item.guid)
+  if item.author.len > 0:
+    result.author = some(item.author)
 
 
 proc markAsRead*(p: Post) {.raises: [RomanError].} =
