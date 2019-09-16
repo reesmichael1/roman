@@ -59,7 +59,7 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
     raise newException(RomanError, "could not write to the terminal: " & msg)
 
 
-proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
+proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError], gcsafe.} =
   result.title = item.title
   result.content = extractBody(item.description)
   result.guid = item.guid

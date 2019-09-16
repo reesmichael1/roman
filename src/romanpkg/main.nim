@@ -3,6 +3,7 @@ import options
 import sequtils
 import tables
 import threadpool
+{.experimental: "parallel".}
 
 import errors
 import feeds
@@ -39,10 +40,19 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
       "Use --subscribe [url] to add some."
     return
   elif subs.len == 1:
-    feed = getFeed(subs[0])
+    feed = getFeed(subs[0])[]
     feeds = @[feed]
   else:
-    feeds = map(subs, getFeed)
+    var flowFeeds: seq[FlowVar[ref Feed]]
+    for sub in subs:
+      parallel:
+        flowFeeds.add(spawn getFeed(sub))
+        # feeds.add(feed)
+
+    sync()
+    feeds = map(flowFeeds, proc(f: FlowVar[ref Feed]): Feed = (^f)[])
+    # blockUntilAll(flowFeeds)
+    # feeds = map(subs, getFeed)
 
   while true:
     if feeds.len == 1:

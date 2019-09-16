@@ -50,16 +50,20 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
+proc getFeed*(sub: Subscription): ref Feed {.raises: [RomanError], gcsafe.} =
   try:
     let rssFeed = FeedNim.getRSS(sub.url)
+    var feed: ref Feed
+    new feed
     if sub.name.len > 0:
-      result.title = sub.name
+      feed.title = sub.name
     else:
-      result.title = rssFeed.title
-    result.posts = map(rssFeed.items,
+      feed.title = rssFeed.title
+    feed.posts = map(rssFeed.items,
       proc (i: RSSItem): Post = postFromRSSItem(i))
-    result.updateUnread()
+    feed[].updateUnread()
+    result = feed
+    # result.updateUnread()
   except ValueError:
     raise newException(RomanError, sub.url & " is not a valid URL")
   except:
