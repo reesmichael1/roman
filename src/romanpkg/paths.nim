@@ -19,10 +19,8 @@ proc initConfigDir*() {.raises: [RomanError].} =
       let subs = getSubsFilePath()
       writeFile(config, "")
       writeFile(subs, "")
-  except OSError as e:
-    raise newException(RomanError, e.msg)
-  except IOError as e:
-    raise newException(RomanError, e.msg)
+  except IOError, OSError:
+    raise newException(RomanError, getCurrentExceptionMsg())
 
 
 proc getShareDir*(): string {.raises: [].} =

@@ -25,10 +25,8 @@ proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
       raise newException(InterruptError, "no feed selected")
     let name = selectedName.unsafeGet()
     result = filter(feeds, proc(f: Feed): bool = f.title == name)[0]
-  except ValueError as e:
-    raise newException(RomanError, e.msg)
-  except IOError as e:
-    raise newException(RomanError, e.msg)
+  except ValueError, IOError:
+    raise newException(RomanError, getCurrentExceptionMsg())
 
 
 proc runMainPath() {.raises: [RomanError, InterruptError].} =
