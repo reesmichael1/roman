@@ -1,3 +1,4 @@
+import options
 import sequtils
 import tables
 import terminal
@@ -11,12 +12,7 @@ import errors
 import posts
 import termask
 
-
-type
-  Feed* = object
-    posts*: seq[Post]
-    title*: string
-    unreadPosts*: int
+from types import Feed, Post, Subscription
 
 
 proc updateUnread*(feed: var Feed) {.raises: [].} =
@@ -28,7 +24,7 @@ proc formatTitle*(feed: Feed): string {.raises: [].} =
   feed.title & " [" & $feed.unreadPosts & "/" & $feed.posts.len & "]"
 
 
-proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
+proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
 
@@ -38,34 +34,35 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError].} =
       display[p.title] = p.formatTitle()
       titles.add(p.title)
 
-    let title = promptList("Select Post", titles, show = 10,
-        displayNames = display)
-    let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
-    bold(post.title)
-    echo post.content, "\n\n"
-    post.markAsRead()
-    feed.updateUnread()
+    while true:
+      let selectedTitle = promptList("Select Post", titles, show = 10,
+          displayNames = display)
+      if selectedTitle.isNone():
+        raise newException(InterruptError, "no post selected")
+      let title = selectedTitle.unsafeGet()
+      let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
+      displayPost(post)
+      post.markAsRead()
+      feed.updateUnread()
   except IOError as e:
     raise newException(RomanError, "could not write to the terminal: " & e.msg)
   except ValueError as e:
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(url: string): Feed {.raises: [RomanError], thread.} =
+proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
   try:
-    let rssFeed = FeedNim.getRSS(url)
-    result.title = rssFeed.title
-    for item in rssFeed.items:
-      result.posts.add(postFromRSSItem(item))
-    # result.posts = map(rssFeed.items,
-    #   proc (i: RSSItem): Post = postFromRSSItem(i))
+    let rssFeed = FeedNim.getRSS(sub.url)
+    if sub.name.len > 0:
+      result.title = sub.name
+    else:
+      result.title = rssFeed.title
+    result.posts = map(rssFeed.items,
+      proc (i: RSSItem): Post = postFromRSSItem(i))
     result.updateUnread()
   except ValueError:
-    raise newException(RomanError, url & " is not a valid URL")
+    raise newException(RomanError, sub.url & " is not a valid URL")
   except:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError,
-      "error while accessing " & url & ": " & msg)
-
-
-# proc getFeedAsync*(url: string): Future[Feed] {.async, raises: [].} =
+      "error while accessing " & sub.url & ": " & msg)

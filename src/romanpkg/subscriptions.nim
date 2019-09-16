@@ -2,15 +2,12 @@ import algorithm
 import os
 import parsecsv
 
+import config
 import errors
 import feeds
 import paths
 
-
-type
-  Subscription* = object
-    url*: string
-    name*: string
+from types import Subscription
 
 
 proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
@@ -34,7 +31,7 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
 
 proc addSubscriptionToSubsFile*(url: string) {.raises: [RomanError].} =
   try:
-    let feed = getFeed(url)
+    let feed = getFeed(Subscription(url: url))
     let subscription = Subscription(name: feed.title, url: url)
     let subs = getSubscriptions()
     if subscription in subs:
