@@ -20,7 +20,8 @@ type
   # to show metadata we collect (e.g., read/unread)
   Post* = object
     title*: string
-    content*: string
+    rendered*: string
+    raw*: string
     guid*: string
     read*: bool
     author*: Option[string]

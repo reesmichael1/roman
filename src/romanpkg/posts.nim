@@ -1,7 +1,10 @@
+import htmlparser
 import options
 import os
+import strtabs
 import strutils
 import terminal
+import xmltree
 
 import FeedNim / rss
 import pager
@@ -45,15 +48,36 @@ proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
   return itemGUID in collectReadPosts()
 
 
+proc displayLinks(content: string) {.raises: [RomanError].} =
+  var html: XmlNode
+  try:
+    html = parseHTML(content)
+  except IOError, ValueError, Exception:
+    let msg = getCurrentExceptionMsg()
+    raise newException(RomanError, "could not parse post HTML: " & msg)
+  var links: seq[string]
+  for a in html.findAll("a"):
+    if a.attrs.hasKey("href"):
+      links.add(a.attrs.getOrDefault("href"))
+
+  if links.len > 0:
+    echo "\nLinks found in post:"
+    for link in links:
+      echo link
+
+    echo "\n"
+
+
 proc displayPost*(p: Post) {.raises: [RomanError].} =
   try:
     var content: string
     if p.author.isSome:
-      content = p.title & "\n" & p.author.unsafeGet & "\n\n" & p.content
+      content = p.title & "\n" & p.author.unsafeGet & "\n\n" & p.rendered
     else:
-      content = p.title & "\n\n" & p.content
+      content = p.title & "\n\n" & p.rendered
     page(content, goToBottom = conf.goToBottom, goToTop = conf.goToTop,
       upOne = conf.up, downOne = conf.down, quitChar = conf.quit)
+    displayLinks(p.raw)
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)
@@ -61,7 +85,8 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
 
 proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
   result.title = item.title
-  result.content = extractBody(item.description)
+  result.rendered = extractBody(item.description)
+  result.raw = item.description
   result.guid = item.guid
   result.read = isPostRead(item.guid)
   if item.author.len > 0:
