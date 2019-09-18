@@ -1,8 +1,8 @@
 import options
 import sequtils
+import strtabs
 import strutils
 import terminal
-import tables
 
 import fab
 
@@ -85,8 +85,8 @@ proc showArgPages(sliceIx: int, argSlices: seq[seq[string]]) {.raises: [].} =
 
 
 proc promptList*(question: string, args: openarray[string],
-    displayNames: Table[string, string] = initTable[string, string](),
-        show: int = -1): Option[string] {.raises: [ValueError, IOError].} =
+    displayNames: StringTableRef = newStringTable(), show: int = -1): Option[
+        string] {.raises: [ValueError, IOError].} =
   var
     selectedIx = 0
     selectionMade = false
