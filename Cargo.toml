@@ -1,0 +1,13 @@
+[package]
+name = "roman"
+version = "0.1.0"
+authors = ["Michael Rees <mrees@noeontheend.com>"]
+edition = "2018"
+
+[dependencies]
+clap = "2.33.0"
+csv = "1.1"
+directories = "2.0.2"
+rss = { version = "1.0", features = ["from_url"] } 
+serde = { version = "1.0.101", features = ["derive"] }
+ask = "0.0.10"
