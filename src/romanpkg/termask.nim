@@ -116,7 +116,6 @@ proc promptList*(question: string, args: openarray[string],
   for arg in currentArgs:
     eraseLine()
     stdout.write "\n"
-    # cursorDown(stdout)
 
   cursorUp(stdout, currentArgs.len)
   hideCursor(stdout)
