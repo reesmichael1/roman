@@ -51,6 +51,11 @@ proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
   return itemGUID in collectReadPosts()
 
 
+proc extractLink(tag: XmlNode): PostLink {.raises: [].} =
+  let text = tag.innerText.splitLines().join(" ")
+  return PostLink(text: text, url: tag.attrs.getOrDefault("href"))
+
+
 proc displayLinks(p: Post) {.raises: [RomanError].} =
   var html: XmlNode
   try:
@@ -59,15 +64,20 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not parse post HTML: " & msg)
   var links = @[PostLink(text: "Source", url: p.link)]
+
+  # Some sources use a single link as the post content
+  if html.tag == "a":
+    links.add(extractLink(html))
+
   for a in html.findAll("a"):
-    if a.attrs.hasKey("href"):
-      var text = a.innerText.splitLines().join(" ")
-      links.add(PostLink(text: text, url: a.attrs.getOrDefault("href")))
+    links.add(extractLink(a))
 
   try:
     var displayNames = initTable[PostLink, string]()
     for link in links:
       displayNames[link] = "[" & link.text & "](" & link.url & ")"
+    # Move down one line in case we're at the END line already
+    echo ""
     let link = promptList("Select link to open in system browser",
         links, displayNames = displayNames).get
     openDefaultBrowser(link.url)
