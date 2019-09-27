@@ -9,6 +9,7 @@ import FeedNim / rss
 
 import errors
 import posts
+import seqreplace
 import termask
 
 from types import Feed, Post, Subscription
@@ -29,19 +30,26 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
 
     var display = initTable[string, string]()
     var titles: seq[string]
-    for p in feed.posts:
-      display[p.title] = p.formatTitle()
-      titles.add(p.title)
 
     while true:
+      display = initTable[string, string]()
+      titles = @[]
+      for p in feed.posts:
+        display[p.title] = p.formatTitle()
+        titles.add(p.title)
       let selectedTitle = promptList("Select Post", titles, show = 10,
           displayNames = display)
       if selectedTitle.isNone():
         raise newException(InterruptError, "no post selected")
       let title = selectedTitle.unsafeGet()
-      let post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
+      var post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
       displayPost(post)
+
+      # Replace the copy of the post in feed.posts
+      # with one that is marked as read
+      let oldPost = post
       post.markAsRead()
+      feed.posts.replace(oldPost, post)
       feed.updateUnread()
   except IOError as e:
     raise newException(RomanError, "could not write to the terminal: " & e.msg)

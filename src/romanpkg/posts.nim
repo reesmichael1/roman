@@ -118,7 +118,7 @@ proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
     result.author = some(item.author)
 
 
-proc markAsRead*(p: Post) {.raises: [RomanError].} =
+proc markAsRead*(p: var Post) {.raises: [RomanError].} =
   var f: File
   if not f.open(getPostReadFile(), mode = fmAppend):
     raise newException(RomanError, "could not open " & getPostReadFile())
@@ -126,6 +126,7 @@ proc markAsRead*(p: Post) {.raises: [RomanError].} =
 
   try:
     f.writeLine(p.guid)
+    p.read = true
   except IOError:
     raise newException(RomanError,
       "could not save " & p.guid & " in the read-posts file")
