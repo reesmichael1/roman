@@ -33,3 +33,5 @@ Cross-platform support is fully intended, but for now, `roman` is only tested on
 ## Contributing
 
 Contributions are welcome! Please send patches, questions, requests, etc. to my [public inbox](mailto:~reesmichael1/public-inbox@lists.sr.ht).
+
+Bug reports and feature requests may also be filed at the [project ticket tracker](https://todo.sr.ht/~reesmichael1/roman).
