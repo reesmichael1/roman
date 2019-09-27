@@ -27,3 +27,10 @@ task run, "Compile and run (release mode)":
 
 task debug, "Compile and run (debug mode)":
     exec "nimble c -r -d:debug -o:bin/debug/roman src/roman.nim"
+
+
+# Foreign dependencies 
+
+when defined(nimdistros):
+    import distros
+    foreignDep "python-html2text"
