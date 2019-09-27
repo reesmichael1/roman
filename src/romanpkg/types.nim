@@ -11,6 +11,7 @@ type
     goToTop*: char
     goToBottom*: char
     postWidth*: int
+    extractLinks*: char
 
   Subscription* = object
     url*: string

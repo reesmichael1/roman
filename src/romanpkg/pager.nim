@@ -52,7 +52,9 @@ proc wrapLines(contents: string, width: int): seq[string] =
 
 
 proc page*(contents: string, goToBottom = 'G', goToTop = 'g', upOne = 'k',
-    quitChar = 'q', downOne = 'j', upHalf = chr(21), downHalf = chr(4)) =
+    quitChar = 'q', downOne = 'j', upHalf = chr(21), downHalf = chr(4),
+    extractLinks = 'L', extractLinksProc = (proc() {.closure,
+        locks: "unknown".} = return)) =
   hideCursor(stdout)
   # lineIx is the index of the *top* line that should be shown
   var lineIx = 0
@@ -95,6 +97,8 @@ proc page*(contents: string, goToBottom = 'G', goToTop = 'g', upOne = 'k',
       lineIx = max(0, lineIx - stepSize)
     elif c == downHalf: # Ctrl-D: go down one half-screen's worth
       lineIx = min(lineIx + stepSize, wrappedLines.len - height)
+    elif c == extractLinks:
+      extractLinksProc()
     elif c == '\3' or c == quitChar: # keyboard interrupt or quit
       stdout.write "\n"
       showCursor(stdout)

@@ -1,8 +1,7 @@
+import browsers
 import htmlparser
 import options
-import os
 import strtabs
-import strutils
 import terminal
 import xmltree
 
@@ -12,6 +11,7 @@ import pager
 import errors
 import htmlextractor
 import paths
+import termask
 
 from config import conf
 from types import Post
@@ -61,11 +61,17 @@ proc displayLinks(content: string) {.raises: [RomanError].} =
       links.add(a.attrs.getOrDefault("href"))
 
   if links.len > 0:
-    echo "\nLinks found in post:"
-    for link in links:
-      echo link
-
-    echo "\n"
+    try:
+      let link = promptList("Select link to open in system browser", links).get
+      openDefaultBrowser(link)
+    except ValueError:
+      discard
+    except UnpackError:
+      discard
+    except IOError as e:
+      raise newException(RomanError, "could not display links: " & e.msg)
+    except Exception as e:
+      raise newException(RomanError, "could not open link: " & e.msg)
 
 
 proc displayPost*(p: Post) {.raises: [RomanError].} =
@@ -76,8 +82,9 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
     else:
       content = p.title & "\n\n" & p.rendered
     page(content, goToBottom = conf.goToBottom, goToTop = conf.goToTop,
-      upOne = conf.up, downOne = conf.down, quitChar = conf.quit)
-    displayLinks(p.raw)
+      upOne = conf.up, downOne = conf.down, quitChar = conf.quit,
+      extractLinks = conf.extractLinks, extractLinksProc = proc() {.closure,
+          noSideEffect, gcsafe.} = {.noSideEffect.}: displayLinks(p.raw))
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)

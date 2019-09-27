@@ -14,3 +14,4 @@ bottom=G
 # If this is greater than the terminal width, 
 # words will be wrapped to match the terminal isntead.
 max-width=80
+extract-links=L
