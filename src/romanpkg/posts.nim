@@ -1,7 +1,10 @@
 import browsers
 import htmlparser
 import options
+import sequtils
 import strtabs
+import strutils
+import tables
 import terminal
 import xmltree
 
@@ -14,7 +17,7 @@ import paths
 import termask
 
 from config import conf
-from types import Post
+from types import Post, PostLink
 
 
 proc formatTitle*(p: Post): string {.raises: [RomanError].} =
@@ -55,15 +58,20 @@ proc displayLinks(content: string) {.raises: [RomanError].} =
   except IOError, ValueError, Exception:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not parse post HTML: " & msg)
-  var links: seq[string]
+  var links: seq[PostLink]
   for a in html.findAll("a"):
     if a.attrs.hasKey("href"):
-      links.add(a.attrs.getOrDefault("href"))
+      var text = a.innerText.splitLines().join(" ")
+      links.add(PostLink(text: text, url: a.attrs.getOrDefault("href")))
 
   if links.len > 0:
     try:
-      let link = promptList("Select link to open in system browser", links).get
-      openDefaultBrowser(link)
+      var displayNames = initTable[PostLink, string]()
+      for link in links:
+        displayNames[link] = "[" & link.text & "](" & link.url & ")"
+      let link = promptList("Select link to open in system browser",
+          links, displayNames = displayNames).get
+      openDefaultBrowser(link.url)
     except ValueError:
       discard
     except UnpackError:

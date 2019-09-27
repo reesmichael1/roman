@@ -1,13 +1,19 @@
+import hashes
 import options
 import sequtils
-import strtabs
 import strutils
+import tables
 import terminal
 
 import fab
 
 from config import conf
-from types import RomanConfig
+from types import PostLink
+
+
+proc hash*(pl: PostLink): Hash =
+  result = pl.text.hash !& pl.url.hash
+  result = !$result
 
 
 # This function was originally based on the promptListInteractive function
@@ -43,19 +49,19 @@ from types import RomanConfig
 #   2243e3fbc2dd277ad81df5d795307bf8389b9240/src/nimblepkg/cli.nim#L177
 
 
-proc goDown(selectedIx: var int, currentArgs: seq[string]) {.raises: [].} =
+proc goDown[T](selectedIx: var int, currentArgs: seq[T]) {.raises: [].} =
   selectedIx = (selectedIx + 1) mod currentArgs.len
 
 
-proc goUp(selectedIx: var int, currentArgs: seq[string]) {.raises: [].} =
+proc goUp[T](selectedIx: var int, currentArgs: seq[T]) {.raises: [].} =
   if selectedIx == 0:
     selectedIx = currentArgs.len - 1
   else:
     selectedIx -= 1
 
 
-proc advancePage(currentArgs: var seq[string], selectedIx: var int,
-    sliceIx: var int, argSlices: seq[seq[string]]) {.raises: [].} =
+proc advancePage[T](currentArgs: var seq[T], selectedIx: var int,
+    sliceIx: var int, argSlices: seq[seq[T]]) {.raises: [].} =
   if argSlices.len == 1:
     return
   # Advance to the next set of results and reset
@@ -66,8 +72,8 @@ proc advancePage(currentArgs: var seq[string], selectedIx: var int,
   currentArgs = argSlices[sliceIx]
 
 
-proc goBackPage(currentArgs: var seq[string], selectedIx: var int,
-    sliceIx: var int, argSlices: seq[seq[string]]) {.raises: [].} =
+proc goBackPage[T](currentArgs: var seq[T], selectedIx: var int,
+    sliceIx: var int, argSlices: seq[seq[T]]) {.raises: [].} =
   if argSlices.len == 1:
     return
   # Go back to the last set of results and reset
@@ -78,18 +84,18 @@ proc goBackPage(currentArgs: var seq[string], selectedIx: var int,
   currentArgs = argSlices[sliceIx]
 
 
-proc showArgPages(sliceIx: int, argSlices: seq[seq[string]]) {.raises: [].} =
+proc showArgPages[T](sliceIx: int, argSlices: seq[seq[T]]) {.raises: [].} =
   echo "\n[", sliceIx + 1, "/", argSlices.len, "]"
 
 
-proc promptList*(question: string, args: openarray[string],
-    displayNames: StringTableRef = newStringTable(), show: int = -1): Option[
-        string] {.raises: [ValueError, IOError].} =
+proc promptList*[T](question: string, args: openarray[T],
+    displayNames: Table[T, string] = initTable[T, string](),
+        show: int = -1): Option[T] {.raises: [ValueError, IOError].} =
   var
     selectedIx = 0
     selectionMade = false
     sliceIx = 0
-    argSlices: seq[seq[string]]
+    argSlices: seq[seq[T]]
 
   if show == -1:
     argSlices = @[toSeq(args)]
@@ -132,7 +138,7 @@ proc promptList*(question: string, args: openarray[string],
       if arg in displayNames:
         shown = displayNames[arg]
       else:
-        shown = arg
+        shown = $arg
       if ix == selectedIx:
         writeStyled("> " & shown & " <", {styleBright})
       else:
@@ -189,7 +195,7 @@ proc promptList*(question: string, args: openarray[string],
         for _ in (selectedIx mod currentArgs.len)..currentArgs.len:
           cursorDown(stdout)
         echo "\n"
-        return none(string)
+        return none(T)
       elif c == '\3':
         showCursor(stdout)
         # Move the cursor down to the end of the arguments list

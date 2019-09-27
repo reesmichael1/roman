@@ -1,7 +1,6 @@
-import os
 import options
 import sequtils
-import strtabs
+import tables
 
 import errors
 import feeds
@@ -13,7 +12,7 @@ from types import Feed, Subscription
 
 proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
     InterruptError].} =
-  var displayNames = newStringTable()
+  var displayNames = initTable[string, string]()
   var titles: seq[string]
   for feed in feeds:
     titles.add(feed.title)

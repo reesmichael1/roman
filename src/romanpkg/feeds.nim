@@ -1,6 +1,6 @@
 import options
 import sequtils
-import strtabs
+import tables
 import terminal
 
 import fab
@@ -27,7 +27,7 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
 
-    var display = newStringTable()
+    var display = initTable[string, string]()
     var titles: seq[string]
     for p in feed.posts:
       display[p.title] = p.formatTitle()

@@ -31,3 +31,7 @@ type
     posts*: seq[Post]
     title*: string
     unreadPosts*: int
+
+  PostLink* = object
+    text*: string
+    url*: string
