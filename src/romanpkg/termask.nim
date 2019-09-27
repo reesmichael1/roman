@@ -6,8 +6,6 @@ import terminal
 
 import fab
 
-import errors
-
 from config import conf
 from types import RomanConfig
 

@@ -2,7 +2,6 @@ import algorithm
 import os
 import parsecsv
 
-import config
 import errors
 import feeds
 import paths

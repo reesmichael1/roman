@@ -1,4 +1,3 @@
-import dynlib
 import terminal
 
 import nimpy
