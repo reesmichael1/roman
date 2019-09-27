@@ -21,6 +21,7 @@ type
   # to show metadata we collect (e.g., read/unread)
   Post* = object
     title*: string
+    link*: string
     rendered*: string
     raw*: string
     guid*: string

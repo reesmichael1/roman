@@ -51,35 +51,34 @@ proc isPostRead(itemGUID: string): bool {.raises: [RomanError].} =
   return itemGUID in collectReadPosts()
 
 
-proc displayLinks(content: string) {.raises: [RomanError].} =
+proc displayLinks(p: Post) {.raises: [RomanError].} =
   var html: XmlNode
   try:
-    html = parseHTML(content)
+    html = parseHTML(p.raw)
   except IOError, ValueError, Exception:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not parse post HTML: " & msg)
-  var links: seq[PostLink]
+  var links = @[PostLink(text: "Source", url: p.link)]
   for a in html.findAll("a"):
     if a.attrs.hasKey("href"):
       var text = a.innerText.splitLines().join(" ")
       links.add(PostLink(text: text, url: a.attrs.getOrDefault("href")))
 
-  if links.len > 0:
-    try:
-      var displayNames = initTable[PostLink, string]()
-      for link in links:
-        displayNames[link] = "[" & link.text & "](" & link.url & ")"
-      let link = promptList("Select link to open in system browser",
-          links, displayNames = displayNames).get
-      openDefaultBrowser(link.url)
-    except ValueError:
-      discard
-    except UnpackError:
-      discard
-    except IOError as e:
-      raise newException(RomanError, "could not display links: " & e.msg)
-    except Exception as e:
-      raise newException(RomanError, "could not open link: " & e.msg)
+  try:
+    var displayNames = initTable[PostLink, string]()
+    for link in links:
+      displayNames[link] = "[" & link.text & "](" & link.url & ")"
+    let link = promptList("Select link to open in system browser",
+        links, displayNames = displayNames).get
+    openDefaultBrowser(link.url)
+  except ValueError:
+    discard
+  except UnpackError:
+    discard
+  except IOError as e:
+    raise newException(RomanError, "could not display links: " & e.msg)
+  except Exception as e:
+    raise newException(RomanError, "could not open link: " & e.msg)
 
 
 proc displayPost*(p: Post) {.raises: [RomanError].} =
@@ -92,7 +91,7 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
     page(content, goToBottom = conf.goToBottom, goToTop = conf.goToTop,
       upOne = conf.up, downOne = conf.down, quitChar = conf.quit,
       extractLinks = conf.extractLinks, extractLinksProc = proc() {.closure,
-          noSideEffect, gcsafe.} = {.noSideEffect.}: displayLinks(p.raw))
+          noSideEffect, gcsafe.} = {.noSideEffect.}: displayLinks(p))
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)
@@ -104,6 +103,7 @@ proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
   result.raw = item.description
   result.guid = item.guid
   result.read = isPostRead(item.guid)
+  result.link = item.link
   if item.author.len > 0:
     result.author = some(item.author)
 

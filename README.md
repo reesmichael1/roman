@@ -18,7 +18,7 @@ roman --subscribe https://feedwebsite.com/feed.rss
 
 Then, when you run `roman`, you will be able to select a feed and post to view. Unread posts are marked as `[*]`. 
 
-When reading a post, you can (by default) press `L` to construct a list of all of the links in the post you are viewing. After selecting one, the link will be opened in your default browser.
+When reading a post, you can (by default) press `L` to construct a list of all of the links in the post you are viewing as well as the link to the original post. After selecting one, the link will be opened in your default browser.
 
 `roman` is still in very early development. Several improvements are planned!
 
