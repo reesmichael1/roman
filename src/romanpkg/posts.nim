@@ -63,7 +63,7 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
   except IOError, ValueError, Exception:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not parse post HTML: " & msg)
-  var links = @[PostLink(text: "Source", url: p.link)]
+  var links = @[PostLink(text: "Original Post", url: p.link)]
 
   # Some sources use a single link as the post content
   if html.tag == "a":
@@ -75,7 +75,10 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
   try:
     var displayNames = initTable[PostLink, string]()
     for link in links:
-      displayNames[link] = "[" & link.text & "](" & link.url & ")"
+      if link.text.len > 0:
+        displayNames[link] = link.text & " (" & link.url & ")"
+      else:
+        displayNames[link] = link.url
     # Move down one line in case we're at the END line already
     echo ""
     let link = promptList("Select link to open in system browser",
