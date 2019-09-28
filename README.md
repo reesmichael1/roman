@@ -20,7 +20,7 @@ Then, when you run `roman`, you will be able to select a feed and post to view. 
 
 When reading a post, you can (by default) press `L` to construct a list of all of the links in the post you are viewing as well as the link to the original post. After selecting one, the link will be opened in your default browser.
 
-`roman` is still in very early development. Several improvements are planned!
+`roman` is still in very early development. [Several improvements are planned!](https://todo.sr.ht/~reesmichael1/roman)
 
 ## Configuration
 
