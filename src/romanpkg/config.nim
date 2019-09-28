@@ -7,6 +7,10 @@ import paths
 
 from types import RomanConfig
 
+# Imported from generic function in termask, so the use isn't recognized
+when defined(nimHasUsed):
+  {.used.}
+
 
 proc strToChar(config: Config, section: string, key: string): char {.
     raises: [RomanError].} =
