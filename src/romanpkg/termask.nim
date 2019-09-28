@@ -192,7 +192,7 @@ proc promptList*[T](question: string, args: openarray[T],
         goBackPage(currentArgs, selectedIx, sliceIx, argSlices)
         break
       elif c == conf.quit:
-        for _ in (selectedIx mod currentArgs.len)..currentArgs.len:
+        for ix in 0..currentArgs.len:
           cursorDown(stdout)
         echo "\n"
         return none(T)
