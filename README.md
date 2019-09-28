@@ -1,6 +1,6 @@
 # Roman
 
-A simple CLI RSS feed reader.
+A simple CLI RSS/Atom feed reader.
 
 ## Installation
 
@@ -10,13 +10,19 @@ A simple CLI RSS feed reader.
 
 ## Usage
 
-To subscribe to feeds, use the `--subscribe` flag. For example, 
+To subscribe to feeds, use the `subscribe` command. For example, 
 
 ```
-roman --subscribe https://feedwebsite.com/feed.rss
+roman subscribe https://feedwebsite.com/feed.rss
 ```
 
-Then, when you run `roman`, you will be able to select a feed and post to view. Unread posts are marked as `[*]`. 
+If `roman` is unable to tell if your feed is an RSS or an Atom feed, this command will not work. If so, use the `--type` option:
+
+```
+roman subscribe https://feedwebsite.com/feed.rss --type rss
+```
+
+Then, when you run `roman browse`, you will be able to select a feed and post to view. Unread posts are marked as `[*]`. 
 
 When reading a post, you can (by default) press `L` to construct a list of all of the links in the post you are viewing as well as the link to the original post. After selecting one, the link will be opened in your default browser.
 

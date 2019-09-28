@@ -1,5 +1,6 @@
 import options
 import sequtils
+import strutils
 import tables
 
 import errors
@@ -8,7 +9,7 @@ import subscriptions
 import termask
 
 import seqreplace
-from types import Feed, Subscription
+from types import Feed, FeedKind, Subscription
 
 
 proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
@@ -64,12 +65,24 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
         continue
 
 
-proc main*(subscribeURL: string = "") {.raises: [].} =
+proc subscribe*(url, feedKindRaw: string) {.raises: [].} =
   try:
-    if subscribeURL != "":
-      addSubscriptionToSubsFile(subscribeURL)
-    else:
-      runMainPath()
+    var feedKind = Unknown
+    if cmpIgnoreCase(feedKindRaw, "rss") == 0:
+      feedKind = RSS
+    elif cmpIgnoreCase(feedKindRaw, "atom") == 0:
+      feedKind = Atom
+    elif feedKindRaw != "":
+      raise newException(RomanError, "unrecognized feed type: " & feedKindRaw)
+    addSubscriptionToSubsFile(url, feedKind)
+  except RomanError as e:
+    echo "error: ", e.msg
+    quit(1)
+
+
+proc main*() {.raises: [].} =
+  try:
+    runMainPath()
   except RomanError as e:
     echo "error: ", e.msg
     quit(1)

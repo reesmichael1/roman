@@ -8,7 +8,7 @@ import tables
 import terminal
 import xmltree
 
-import FeedNim / rss
+import FeedNim / [atom, rss]
 import pager
 
 import errors
@@ -108,6 +108,17 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
   except IOError, ValueError:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not write to the terminal: " & msg)
+
+
+proc postFromAtomEntry*(entry: AtomEntry): Post {.raises: [RomanError].} =
+  result.title = entry.title
+  result.rendered = extractBody(entry.content)
+  result.raw = entry.content
+  result.guid = entry.id
+  result.read = isPostRead(entry.id)
+  result.link = entry.link.href
+  if entry.author.name.len > 0:
+    result.author = some(entry.author.name)
 
 
 proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
