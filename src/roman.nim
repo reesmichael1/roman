@@ -15,7 +15,6 @@ when isMainModule:
         help = "explicitly state type of feed (accepted: \"rss\" or \"atom\")")
       arg("url", help = "the URL of the feed to subscribe to")
       run:
-        echo "running subscribe"
         subscribe(opts.url, opts.type)
         quit(0)
     # I would strongly prefer to make this the main run path,

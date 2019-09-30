@@ -16,7 +16,7 @@ To subscribe to feeds, use the `subscribe` command. For example,
 roman subscribe https://feedwebsite.com/feed.rss
 ```
 
-If `roman` is unable to tell if your feed is an RSS or an Atom feed, this command will not work. If so, use the `--type` option:
+`roman` will do its best to detect if the feed you've given is an RSS or an Atom feed. If `roman` is unable to tell if your feed is an RSS or an Atom feed (or if it guesses incorrectly), this command will not work. If this is the case, use the `--type` option:
 
 ```
 roman subscribe https://feedwebsite.com/feed.rss --type rss

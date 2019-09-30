@@ -2,8 +2,10 @@ import httpclient
 import options
 import sequtils
 import streams
+import strutils
 import tables
 import terminal
+import uri
 import xmlparser
 import xmltree
 
@@ -16,6 +18,10 @@ import seqreplace
 import termask
 
 from types import Feed, FeedKind, Post, Subscription
+
+
+let atomNames = ["index.atom", "feed.atom", "atom.xml"]
+let rssNames = ["index.rss", "feed.rss", "rss.xml"]
 
 
 proc updateUnread*(feed: var Feed) {.raises: [].} =
@@ -39,9 +45,28 @@ proc detectFeedKind(content: string): FeedKind {.raises: [RomanError].} =
   if feed.len == 0 and rss.len > 0:
     return FeedKind.RSS
 
-  # If we can't uniquely identify one or the other,
-  # we'll eventually try some dirty tricks here. But for now...
-  # If all else fails, ask the user to tell us which type of feed it is
+  return FeedKind.Unknown
+
+
+proc guessFeedKind(url: string): FeedKind {.raises: [].} =
+  # If we can't uniquely identify one or the other, try some dirty tricks here.
+  # If all else fails, return FeedKind.Unknown again, which will
+  # ask the user to tell us which type of feed it is.
+  let parsed = parseURI(url)
+
+  if atomNames.anyIt(parsed.path.contains(it)):
+    return FeedKind.Atom
+  elif rssNames.anyIt(parsed.path.contains(it)):
+    return FeedKind.RSS
+
+  if parsed.path.len > 3 and parsed.path[
+      parsed.path.len-3..parsed.path.high] == "rss":
+    return FeedKind.RSS
+
+  if parsed.path.len > 4 and parsed.path[
+      parsed.path.len-4..parsed.path.high] == "atom":
+    return FeedKind.Atom
+
   return FeedKind.Unknown
 
 
@@ -90,6 +115,8 @@ proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
     var feedKind = sub.feedKind
     if feedKind == Unknown:
       feedKind = detectFeedKind(content)
+    if feedKind == Unknown:
+      feedKind = guessFeedKind(sub.url)
     case feedKind:
     of FeedKind.RSS:
       let rawFeed = parseRSS(content)
