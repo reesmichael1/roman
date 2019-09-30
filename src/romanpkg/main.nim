@@ -36,13 +36,9 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
   var feed: Feed
   if subs.len == 0:
     echo "You aren't subscribed to any feeds yet! ",
-      "Use --subscribe [url] to add some."
+      "Use roman subscribe [url] to add some."
     return
-  elif subs.len == 1:
-    feed = getFeed(subs[0])
-    feeds = @[feed]
-  else:
-    feeds = map(subs, getFeed)
+  feeds = getFeeds(subs)
 
   while true:
     if feeds.len == 1:

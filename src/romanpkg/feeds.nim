@@ -1,3 +1,4 @@
+import asyncdispatch
 import httpclient
 import options
 import sequtils
@@ -108,10 +109,9 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
+proc buildFeedFromContentAndSub(content: string, sub: Subscription): Feed {.
+    raises: [RomanError].} =
   try:
-    var client = newHttpClient()
-    let content = client.getContent(sub.url)
     var feedKind = sub.feedKind
     if feedKind == Unknown:
       feedKind = detectFeedKind(content)
@@ -145,3 +145,32 @@ proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError,
       "while accessing " & sub.url & ": " & msg)
+
+
+proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
+  try:
+    var client = newHttpClient()
+    let content = client.getContent(sub.url)
+    result = buildFeedFromContentAndSub(content, sub)
+  except Exception as e:
+    raise newException(RomanError, e.msg)
+
+
+proc asyncFeedsLoader(subs: seq[Subscription]): Future[seq[Feed]] {.async.} =
+  var futures = newSeq[Future[string]](subs.len)
+  result = newSeq[Feed](subs.len)
+  for ix, sub in subs:
+    var client = newAsyncHttpClient()
+    futures[ix] = client.getContent(sub.url)
+
+  let contents = await all(futures)
+  for ix, content in contents:
+    result[ix] = buildFeedFromContentAndSub(content, subs[ix])
+
+
+proc getFeeds*(subs: seq[Subscription]): seq[Feed] {.raises: [RomanError].} =
+  try:
+    result = waitFor asyncFeedsLoader(subs)
+  except:
+    raise newException(RomanError, "error in loading feeds: " &
+        getCurrentExceptionMsg())
