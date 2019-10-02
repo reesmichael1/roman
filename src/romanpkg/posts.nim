@@ -1,7 +1,6 @@
 import browsers
 import htmlparser
 import options
-import sequtils
 import strtabs
 import strutils
 import tables

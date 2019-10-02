@@ -26,7 +26,7 @@ let rssNames = ["index.rss", "feed.rss", "rss.xml"]
 
 
 proc updateUnread*(feed: var Feed) {.raises: [].} =
-  feed.unreadPosts = filter(feed.posts, proc(p: Post): bool = not p.read).len
+  feed.unreadPosts = feed.posts.filterIt(not it.read).len
 
 
 proc detectFeedKind(content: string): FeedKind {.raises: [RomanError].} =
@@ -94,7 +94,7 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
       if selectedTitle.isNone():
         raise newException(InterruptError, "no post selected")
       let title = selectedTitle.unsafeGet()
-      var post = filter(feed.posts, proc(p: Post): bool = p.title == title)[0]
+      var post = feed.posts.filterIt(it.title == title)[0]
       displayPost(post)
 
       # Replace the copy of the post in feed.posts
@@ -124,16 +124,14 @@ proc buildFeedFromContentAndSub(content: string, sub: Subscription): Feed {.
         result.title = sub.name
       else:
         result.title = rawFeed.title
-      result.posts = map(rawFeed.items,
-        proc (i: RSSItem): Post = postFromRSSItem(i))
+      result.posts = rawFeed.items.mapIt(postFromRSSItem(it))
     of FeedKind.Atom:
       let rawFeed = parseAtom(content)
       if sub.name.len > 0:
         result.title = sub.name
       else:
         result.title = rawFeed.title.text
-      result.posts = map(rawFeed.entries,
-        proc (e: AtomEntry): Post = postFromAtomEntry(e))
+      result.posts = rawFeed.entries.mapIt(postFromAtomEntry(it))
     of Unknown:
       raise newException(RomanError,
         "could not identify feed as RSS or Atom, please use --type option")
