@@ -150,6 +150,18 @@ proc promptList*[T](question: string, args: openarray[T],
         for s in 0..<(width):
           cursorBackward(stdout)
       cursorDown(stdout)
+
+    # If we have extra args left over after advancing the page,
+    # erase those lines.
+    if currentArgs.len != show and argSlices.len > 1:
+      for line in currentArgs.len..<show:
+        eraseLine()
+        cursorDown(stdout)
+
+      # Then move the cursor back up where it belongs
+      for line in currentArgs.len..<show:
+        cursorUp(stdout)
+
     for i in 0..<currentArgs.len():
       cursorUp(stdout)
 
