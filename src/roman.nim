@@ -9,6 +9,8 @@ proc showVersion() =
 
 when isMainModule:
   var p = newParser("roman"):
+    help("a command line RSS feed reader")
+    flag("-v", "--version", help = "print version information")
     command("subscribe"):
       help("add a feed URL to the subscription list")
       option("-t", "--type",
@@ -16,20 +18,11 @@ when isMainModule:
       arg("url", help = "the URL of the feed to subscribe to")
       run:
         subscribe(opts.url, opts.type)
-        quit(0)
-    # I would strongly prefer to make this the main run path,
-    # but argparse runs the main run path before any subcommands
-    # (see https://github.com/iffy/nim-argparse/issues/27),
-    # so doing so makes it impossible to subscribe to feeds.
-    command("browse"):
-      help("browse through subscribed feeds")
-      run:
-        main()
-    help("a command line RSS feed reader")
-    flag("-v", "--version", help = "print version information")
     run:
       if opts.version:
         showVersion()
+      if opts.argparseCommand == "":
+        main()
 
   try:
     p.run()
