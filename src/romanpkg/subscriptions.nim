@@ -18,6 +18,9 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
     var p: CsvParser
     p.open(subsFilePath)
     while p.readRow():
+      if p.row.len > 0 and p.row[0].len > 0:
+        if p.row[0][0] == '#':
+          continue
       if p.row.len != 3:
         raise newException(RomanError,
           "bad line in subscriptions file: " & $p.row)
@@ -30,6 +33,7 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
         else:
           raise newException(RomanError,
             "unrecognized type field in subscriptions file: " & p.row[2])
+
       result.add(Subscription(name: p.row[0], url: p.row[1], feedKind: kind))
 
     result.sort(proc(a, b: Subscription): int = cmp(a.name, b.name))
