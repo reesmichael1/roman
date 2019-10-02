@@ -42,6 +42,7 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
 
   while true:
     if feeds.len == 1:
+      feed = feeds[0]
       displayFeed(feed)
     else:
       feed = chooseFeed(feeds)
