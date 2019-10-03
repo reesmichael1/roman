@@ -207,6 +207,7 @@ proc promptList*[T](question: string, args: openarray[T],
         for ix in 0..currentArgs.len:
           cursorDown(stdout)
         echo "\n"
+        showCursor(stdout)
         return none(T)
       elif c == '\3':
         showCursor(stdout)
