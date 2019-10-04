@@ -6,7 +6,7 @@ A simple CLI RSS/Atom feed reader.
 
 `roman` is written in [Nim](https://nim-lang.org). Binaries are not yet available, so you will need to build from source. With `nim 0.20` installed, you should simply need to run `nimble build`. 
 
-`roman` uses [`html2text`](http://alir3z4.github.io/html2text/) to display post bodies. You will need to have it installed on your system.
+`roman` uses [`html2text`](http://alir3z4.github.io/html2text/) to display post bodies. You will need to have it installed on your system. [`nim-html2text`](https://git.sr.ht/~reesmichael1/nim-html2text) is being actively developed to replace this dependency.
 
 ## Usage
 
