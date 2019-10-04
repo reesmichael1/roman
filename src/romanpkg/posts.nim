@@ -5,6 +5,7 @@ import strtabs
 import strutils
 import tables
 import terminal
+import unicode
 import xmltree
 
 import FeedNim / [atom, rss]
@@ -71,13 +72,22 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
   for a in html.findAll("a"):
     links.add(extractLink(a))
 
+  proc shortenURL(url: string, text: string): string =
+    # 3 for ' ()', 4 for '>   <'
+    let availableWidth = terminalWidth() - text.runeLen() - 7
+    if url.runeLen() > availableWidth:
+      # Remove three more characters for the ellipsis
+      return url[0..<(availableWidth - 3)] & "..."
+    return url
+
   try:
     var displayNames = initTable[PostLink, string]()
     for link in links:
       if link.text.len > 0:
-        displayNames[link] = link.text & " (" & link.url & ")"
+        displayNames[link] = link.text & " (" & shortenURL(link.url,
+            link.text) & ")"
       else:
-        displayNames[link] = link.url
+        displayNames[link] = shortenURL(link.url, "")
     # Move down one line in case we're at the END line already
     echo ""
     let link = promptList("Select link to open in system browser",
