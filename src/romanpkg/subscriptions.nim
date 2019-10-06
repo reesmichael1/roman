@@ -1,6 +1,7 @@
 import algorithm
 import os
 import parsecsv
+import strutils
 
 import errors
 import feeds
@@ -36,7 +37,8 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
 
       result.add(Subscription(name: p.row[0], url: p.row[1], feedKind: kind))
 
-    result.sort(proc(a, b: Subscription): int = cmp(a.name, b.name))
+    result.sort(proc(a, b: Subscription): int = cmpIgnoreCase(a.name, b.name))
+    echo result
   except:
     raise newException(RomanError, getCurrentExceptionMsg())
 
