@@ -41,3 +41,6 @@ type
   PostLink* = object
     text*: string
     url*: string
+
+  ManageAction* = enum
+    NoOp, Unsubscribe

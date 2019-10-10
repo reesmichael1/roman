@@ -18,6 +18,10 @@ when isMainModule:
       arg("url", help = "the URL of the feed to subscribe to")
       run:
         subscribe(opts.url, opts.type)
+    command("manage"):
+      help("manage subscribed feeds")
+      run:
+        manage()
     run:
       if opts.version:
         showVersion()

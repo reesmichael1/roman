@@ -9,7 +9,23 @@ import subscriptions
 import termask
 
 import seqreplace
-from types import Feed, FeedKind, Subscription
+from types import Feed, FeedKind, ManageAction, Subscription
+
+
+proc chooseSubscription(subs: seq[Subscription]): Subscription {.raises: [
+    RomanError, InterruptError].} =
+  var displayNames = initTable[Subscription, string]()
+  for sub in subs:
+    # TODO: wrap width if necessary
+    displayNames[sub] = sub.name & " (" & sub.url & ")"
+  try:
+    let selectedName = promptList("Select Subscription", subs,
+        displayNames = displayNames, show = 10)
+    if selectedName.isNone:
+      raise newException(InterruptError, "no subscription selected")
+    result = selectedName.unsafeGet()
+  except ValueError, IOError:
+    raise newException(RomanError, getCurrentExceptionMsg())
 
 
 proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
@@ -28,6 +44,22 @@ proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
     result = feeds.filterIt(it.title == name)[0]
   except ValueError, IOError:
     raise newException(RomanError, getCurrentExceptionMsg())
+
+
+proc chooseManageAction(): ManageAction {.raises: [RomanError].} =
+  # TODO: implement more actions
+  try:
+    var displayNames = {NoOp: "do nothing", Unsubscribe: "unsubscribe"}.toTable
+    let action = promptList("Choose operation", [Unsubscribe, NoOp], displayNames)
+    if action.isNone:
+      return NoOp
+    return action.unsafeGet()
+  except InterruptError:
+    return NoOp
+  except ValueError, IOError:
+    let msg = getCurrentExceptionMsg()
+    raise newException(RomanError, "error when choosing operation: " & msg)
+
 
 
 proc runMainPath() {.raises: [RomanError, InterruptError].} =
@@ -75,6 +107,31 @@ proc subscribe*(url, feedKindRaw: string) {.raises: [].} =
   except RomanError as e:
     echo "error: ", e.msg
     quit(1)
+
+
+proc manage*() {.raises: [].} =
+  while true:
+    try:
+      let subs = getSubscriptions()
+      var sub: Subscription
+      if subs.len == 0:
+        echo subs.len
+        return
+      elif subs.len == 1:
+        sub = subs[0]
+      else:
+        sub = chooseSubscription(subs)
+      let action = chooseManageAction()
+      case action
+      of NoOp:
+        discard
+      of Unsubscribe:
+        removeSubscriptionFromSubsFile(sub)
+    except InterruptError:
+      quit(0)
+    except RomanError as e:
+      echo "error: ", e.msg
+      quit(1)
 
 
 proc main*() {.raises: [].} =
