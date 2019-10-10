@@ -9,7 +9,7 @@ import subscriptions
 import termask
 
 import seqreplace
-from types import Feed, FeedKind, ManageAction, Subscription
+import types
 
 
 proc chooseSubscription(subs: seq[Subscription]): Subscription {.raises: [
@@ -30,18 +30,15 @@ proc chooseSubscription(subs: seq[Subscription]): Subscription {.raises: [
 
 proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
     InterruptError].} =
-  var displayNames = initTable[string, string]()
-  var titles: seq[string]
+  var displayNames = initTable[Feed, string]()
   for feed in feeds:
-    titles.add(feed.title)
-    displayNames[feed.title] = feed.formatTitle()
+    displayNames[feed] = feed.formatTitle()
   try:
-    let selectedName = promptList("Select Feed", titles,
+    let selectedName = promptList("Select Feed", feeds,
         displayNames = displayNames, show = 10)
     if selectedName.isNone:
       raise newException(InterruptError, "no feed selected")
-    let name = selectedName.unsafeGet()
-    result = feeds.filterIt(it.title == name)[0]
+    result = selectedName.unsafeGet()
   except ValueError, IOError:
     raise newException(RomanError, getCurrentExceptionMsg())
 

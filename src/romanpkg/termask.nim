@@ -1,4 +1,3 @@
-import hashes
 import options
 import sequtils
 import strutils
@@ -8,17 +7,6 @@ import terminal
 import fab
 
 from config import conf
-from types import PostLink, Subscription
-
-
-proc hash*(pl: PostLink): Hash =
-  result = pl.text.hash !& pl.url.hash
-  result = !$result
-
-
-proc hash*(sub: Subscription): Hash =
-  result = sub.name.hash !& sub.url.hash !& sub.feedKind.hash
-  result = !$result
 
 
 # This function was originally based on the promptListInteractive function

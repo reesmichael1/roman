@@ -15,9 +15,9 @@ import errors
 import htmlextractor
 import paths
 import termask
+import types
 
 from config import conf
-from types import Post, PostLink
 
 
 proc formatTitle*(p: Post): string {.raises: [RomanError].} =

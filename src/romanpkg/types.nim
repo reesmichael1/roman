@@ -1,3 +1,4 @@
+import hashes
 import options
 
 
@@ -44,3 +45,19 @@ type
 
   ManageAction* = enum
     NoOp, Unsubscribe
+
+
+
+proc hash*(pl: PostLink): Hash =
+  result = pl.text.hash !& pl.url.hash
+  result = !$result
+
+
+proc hash*(sub: Subscription): Hash =
+  result = sub.name.hash !& sub.url.hash !& sub.feedKind.hash
+  result = !$result
+
+
+proc hash*(feed: Feed): Hash =
+  result = feed.kind.hash !& feed.title.hash !& feed.unreadPosts.hash
+  result = !$result
