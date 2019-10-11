@@ -6,8 +6,14 @@ import strutils
 import errors
 import feeds
 import paths
+import termask
 
 from types import FeedKind, Subscription
+
+
+proc newSubscription*(name, url: string, kind: FeedKind): Subscription {.
+    raises: [].} =
+  Subscription(name: name, url: url, feedKind: kind)
 
 
 proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
@@ -54,16 +60,12 @@ proc subscriptionToLine(sub: Subscription): string {.raises: [RomanError].} =
   return sub.name & "," & sub.url & "," & kind
 
 
-proc addSubscriptionToSubsFile*(url: string, feedKind: FeedKind) {.
-    raises: [RomanError].} =
+proc addFullSubscriptionToSubsFile(subscription: Subscription) {.raises: [RomanError].} =
   try:
-    let feed = getFeed(Subscription(url: url, feedKind: feedKind))
-    let subscription = Subscription(name: feed.title, url: url,
-        feedKind: feed.kind)
     let subs = getSubscriptions()
     if subscription in subs:
       raise newException(RomanError,
-        "you are already subscribed to " & url & "!")
+        "you are already subscribed to " & subscription.url & "!")
     var f: File
     let filename = getSubsFilePath()
     if f.open(filename, fmAppend):
@@ -71,6 +73,14 @@ proc addSubscriptionToSubsFile*(url: string, feedKind: FeedKind) {.
       f.writeLine(subscriptionToLine(subscription))
   except IOError as e:
     raise newException(RomanError, e.msg)
+
+
+proc addSubscriptionToSubsFile*(url: string, feedKind: FeedKind) {.
+    raises: [RomanError].} =
+  let feed = getFeed(Subscription(url: url, feedKind: feedKind))
+  let subscription = Subscription(name: feed.title, url: url,
+      feedKind: feed.kind)
+  addFullSubscriptionToSubsFile(subscription)
 
 
 proc subscriptionFromLine(line: string): Subscription {.raises: [RomanError].} =
@@ -109,3 +119,12 @@ proc removeSubscriptionFromSubsFile*(sub: Subscription) {.
   except IOError as e:
     raise newException(RomanError,
       "could not open subscriptions file: " & e.msg)
+
+
+proc editSubscriptionTitle*(sub: Subscription) {.raises: [RomanError].} =
+  let newName = askUserForInput("Enter new name (empty to go back): ", sub.name)
+  if newName == "":
+    return
+  let newSub = newSubscription(newName, sub.url, sub.feedKind)
+  removeSubscriptionFromSubsFile(sub)
+  addFullSubscriptionToSubsFile(newSub)

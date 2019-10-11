@@ -46,8 +46,12 @@ proc chooseFeed(feeds: seq[Feed]): Feed {.raises: [RomanError,
 proc chooseManageAction(): ManageAction {.raises: [RomanError].} =
   # TODO: implement more actions
   try:
-    var displayNames = {NoOp: "do nothing", Unsubscribe: "unsubscribe"}.toTable
-    let action = promptList("Choose operation", [Unsubscribe, NoOp], displayNames)
+    var displayNames = {
+      EditTitle: "edit title",
+      NoOp: "do nothing",
+      Unsubscribe: "unsubscribe"
+    }.toTable
+    let action = promptList("Choose operation", [EditTitle, Unsubscribe, NoOp], displayNames)
     if action.isNone:
       return NoOp
     return action.unsafeGet()
@@ -122,6 +126,8 @@ proc manage*() {.raises: [].} =
       case action
       of NoOp:
         discard
+      of EditTitle:
+        editSubscriptionTitle(sub)
       of Unsubscribe:
         removeSubscriptionFromSubsFile(sub)
     except InterruptError:

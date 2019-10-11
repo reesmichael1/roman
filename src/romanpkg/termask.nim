@@ -5,11 +5,33 @@ import tables
 import terminal
 
 import fab
+import noise
 
+import errors
 from config import conf
 
 
-# This function was originally based on the promptListInteractive function
+proc askUserForInput*(prompt: string, default = ""): string {.
+    raises: [RomanError].} =
+  ## Read user input from stdin, but optionally provide a default value
+  ## to pre-fill the prompt.
+  try:
+    var noise = Noise.init()
+    let prompt = Styler.init(prompt)
+    noise.setPrompt(prompt)
+    noise.preloadBuffer(default)
+
+    let ok = noise.readLine()
+    if not ok:
+      raise newException(RomanError, "could not read from input line")
+    result = noise.getLine()
+
+  except:
+    let msg = getCurrentExceptionMsg()
+    raise newException(RomanError, "could not ask user for input: " & msg)
+
+
+# These functions were originally based on the promptListInteractive function
 # in Nimble, and is therefore under the same license.
 
 # Copyright (c) 2015, Dominik Picheta
@@ -213,9 +235,8 @@ proc promptList*[T](question: string, args: openarray[T],
       else: break
 
   for i in 0..<currentArgs.len:
-    eraseLine(stdout)
     cursorDown(stdout)
-  for i in 0..<currentArgs.len():
-    cursorUp(stdout)
+  echo "\n"
+
   showCursor(stdout)
   return some(currentArgs[selectedIx])

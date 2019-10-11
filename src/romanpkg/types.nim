@@ -44,7 +44,7 @@ type
     url*: string
 
   ManageAction* = enum
-    NoOp, Unsubscribe
+    EditTitle, NoOp, Unsubscribe
 
 
 
