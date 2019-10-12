@@ -41,7 +41,7 @@ proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
           raise newException(RomanError,
             "unrecognized type field in subscriptions file: " & p.row[2])
 
-      result.add(Subscription(name: p.row[0], url: p.row[1], feedKind: kind))
+      result.add(newSubscription(p.row[0], p.row[1], kind))
 
     result.sort(proc(a, b: Subscription): int = cmpIgnoreCase(a.name, b.name))
   except:
@@ -77,9 +77,8 @@ proc addFullSubscriptionToSubsFile(subscription: Subscription) {.raises: [RomanE
 
 proc addSubscriptionToSubsFile*(url: string, feedKind: FeedKind) {.
     raises: [RomanError].} =
-  let feed = getFeed(Subscription(url: url, feedKind: feedKind))
-  let subscription = Subscription(name: feed.title, url: url,
-      feedKind: feed.kind)
+  let feed = getFeed(newSubscription("", url, feedKind))
+  let subscription = newSubscription(feed.title, url, feed.kind)
   addFullSubscriptionToSubsFile(subscription)
 
 
