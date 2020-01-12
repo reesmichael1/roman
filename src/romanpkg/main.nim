@@ -62,14 +62,17 @@ proc chooseManageAction(): ManageAction {.raises: [RomanError].} =
     raise newException(RomanError, "error when choosing operation: " & msg)
 
 
+const NOT_SUBSCRIBED_MSG = "You aren't subscribed to any feeds yet! " &
+  "Use roman subscribe [url] to add some."
+
+
 
 proc runMainPath() {.raises: [RomanError, InterruptError].} =
   let subs = getSubscriptions()
   var feeds: seq[Feed]
   var feed: Feed
   if subs.len == 0:
-    echo "You aren't subscribed to any feeds yet! ",
-      "Use roman subscribe [url] to add some."
+    echo NOT_SUBSCRIBED_MSG
     return
   feeds = getFeeds(subs)
 
@@ -116,7 +119,7 @@ proc manage*() {.raises: [].} =
       let subs = getSubscriptions()
       var sub: Subscription
       if subs.len == 0:
-        echo subs.len
+        echo NOT_SUBSCRIBED_MSG
         return
       elif subs.len == 1:
         sub = subs[0]
