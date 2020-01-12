@@ -12,6 +12,7 @@ binDir        = "bin"
 # Dependencies
 
 requires "argparse >= 0.9"
+requires "csvtools >= 0.2"
 requires "fab >= 0.4"
 requires "feednim >= 0.2"
 requires "nim >= 0.20.0"

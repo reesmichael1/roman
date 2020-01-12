@@ -26,7 +26,7 @@ type
     author*: Option[string]
 
   FeedKind* = enum
-    RSS, Atom, Unknown
+    RSS = "RSS", Atom = "Atom", Unknown
 
   Feed* = object
     kind*: FeedKind
