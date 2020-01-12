@@ -9,7 +9,6 @@ bin           = @["roman"]
 binDir        = "bin"
 
 
-
 # Dependencies
 
 requires "argparse >= 0.9"
@@ -19,19 +18,10 @@ requires "nim >= 0.20.0"
 requires "nimpy >= 0.1"
 requires "noise >= 0.1"
 
-
-
-# Tasks
-
-task run, "Compile and run (release mode)":
-    exec "nimble c -r -d:release -o:bin/release/roman src/roman.nim"
-
-task debug, "Compile and run (debug mode)":
-    exec "nimble c -r -d:debug -o:bin/debug/roman src/roman.nim"
-
-
-# Foreign dependencies 
+# We can't depend on the -d:internalRenderer flag here, 
+# see https://github.com/nim-lang/nimble/issues/605
+requires "https://git.sr.ht/~reesmichael1/nim-html2text >= 0.1.0"
 
 when defined(nimdistros):
-    import distros
-    foreignDep "python-html2text"
+  import distros
+  foreignDep "python-html2text"

@@ -6,8 +6,6 @@ A simple CLI RSS/Atom feed reader.
 
 `roman` is written in [Nim](https://nim-lang.org). Binaries are not yet available, so you will need to build from source. With `nim 0.20` installed, you should simply need to run `nimble build`. 
 
-`roman` uses [`html2text`](http://alir3z4.github.io/html2text/) to display post bodies. You will need to have it installed on your system. [`nim-html2text`](https://git.sr.ht/~reesmichael1/nim-html2text) is being actively developed to replace this dependency.
-
 ## Usage
 
 To subscribe to feeds, use the `subscribe` command. For example, 
@@ -29,6 +27,12 @@ When reading a post, you can (by default) press `L` to construct a list of all o
 You can manage your subscriptions by running `roman manage`.
 
 `roman` is still in very early development. [Several improvements are planned!](https://todo.sr.ht/~reesmichael1/roman) However, `roman` is already quite usable.
+
+### Renderers
+
+By default, `roman` uses [`html2text`](http://alir3z4.github.io/html2text/) to display post bodies. You will need to have it installed on your system. 
+
+However, if `roman` is compiled with `-d:internalRenderer`, the experimental [`nim-html2text`](https://git.sr.ht/~reesmichael1/nim-html2text) library will be used instead. This library still needs work, but it removes the need for an external dependency.
 
 ## Configuration
 
