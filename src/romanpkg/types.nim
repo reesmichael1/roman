@@ -11,6 +11,7 @@ type
     quit*: char
     goToTop*: char
     goToBottom*: char
+    toggleRead*: char
     postWidth*: int
     extractLinks*: char
 
