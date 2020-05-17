@@ -1,10 +1,11 @@
 import terminal
 
-import nimpy
-
 import errors
 when defined(internalRenderer):
   import html2text
+else:
+  import nimpy
+
 
 from config import conf
 
