@@ -1,3 +1,7 @@
+when defined(internalRenderer):
+  {.experimental: "parallel".}
+  import threadpool
+
 import asyncdispatch
 import httpclient
 import options
@@ -21,8 +25,8 @@ import termask
 from types import Feed, FeedKind, Post, Subscription
 
 
-let atomNames = ["index.atom", "feed.atom", "atom.xml"]
-let rssNames = ["index.rss", "feed.rss", "rss.xml"]
+const atomNames = ["index.atom", "feed.atom", "atom.xml"]
+const rssNames = ["index.rss", "feed.rss", "rss.xml"]
 
 
 proc updateUnread*(feed: var Feed) {.raises: [].} =
@@ -109,8 +113,9 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
     raise newException(RomanError, "could not set terminal style: " & e.msg)
 
 
-proc buildFeedFromContentAndSub(content: string, sub: Subscription): Feed {.
+proc buildFeedFromContentAndSub(content: string, sub: Subscription): ref Feed {.
     raises: [RomanError].} =
+  result = new Feed
   try:
     var feedKind = sub.feedKind
     if feedKind == Unknown:
@@ -136,7 +141,7 @@ proc buildFeedFromContentAndSub(content: string, sub: Subscription): Feed {.
       raise newException(RomanError,
         "could not identify feed as RSS or Atom, please use --type option")
     result.kind = feedKind
-    result.updateUnread()
+    result[].updateUnread()
   except ValueError:
     raise newException(RomanError, sub.url & " is not a valid URL")
   except:
@@ -149,26 +154,40 @@ proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
   try:
     var client = newHttpClient()
     let content = client.getContent(sub.url)
-    result = buildFeedFromContentAndSub(content, sub)
+    result = buildFeedFromContentAndSub(content, sub)[]
   except Exception as e:
     raise newException(RomanError, e.msg)
 
 
-proc asyncFeedsLoader(subs: seq[Subscription]): Future[seq[Feed]] {.async.} =
+proc asyncFeedsLoader(subs: seq[Subscription]): Future[seq[string]] {.async.} =
   var futures = newSeq[Future[string]](subs.len)
-  result = newSeq[Feed](subs.len)
+  result = newSeq[string](subs.len)
   for ix, sub in subs:
     var client = newAsyncHttpClient()
     futures[ix] = client.getContent(sub.url)
 
-  let contents = await all(futures)
-  for ix, content in contents:
-    result[ix] = buildFeedFromContentAndSub(content, subs[ix])
+  result = await all(futures)
 
 
 proc getFeeds*(subs: seq[Subscription]): seq[Feed] {.raises: [RomanError].} =
+  result = newSeq[Feed](subs.len)
+  var contents: seq[string]
   try:
-    result = waitFor asyncFeedsLoader(subs)
+    contents = waitFor asyncFeedsLoader(subs)
+    when defined(internalRenderer):
+      var responses = newSeq[FlowVar[ref Feed]](subs.len)
+      parallel:
+        for ix, content in contents:
+          responses[ix] = spawn buildFeedFromContentAndSub(content, subs[ix])
+
+      sync()
+      for ix, response in responses:
+        result[ix] = (^response)[]
+
+    else:
+      for ix, content in contents:
+        result[ix] = buildFeedFromContentAndSub(content, subs[ix])[]
+
   except:
     raise newException(RomanError, "error in loading feeds: " &
         getCurrentExceptionMsg())
