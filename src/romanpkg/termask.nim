@@ -9,6 +9,7 @@ import noise
 
 import errors
 from config import conf
+# from types import Post
 
 
 proc askUserForInput*(prompt: string, default = ""): string {.
@@ -103,9 +104,11 @@ proc showArgPages[T](sliceIx: int, argSlices: seq[seq[T]]) {.raises: [].} =
   echo "\n[", sliceIx + 1, "/", argSlices.len, "]"
 
 
-proc promptList*[T](question: string, args: openarray[T],
-    displayNames: Table[T, string] = initTable[T, string](),
-        show: int = -1): Option[T] {.raises: [ValueError, IOError].} =
+proc promptList*[T, U](question: string, args: openarray[T],
+    displayNames: Table[T, U] = initTable[T, U](),
+    show: int = -1,
+    callbacks: TableRef[char, proc(index: int) {.gcSafe, closure.}] = nil):
+      Option[T] {.raises: [ValueError, IOError].} =
   var
     selectedIx = 0
     selectionMade = false
@@ -151,7 +154,7 @@ proc promptList*[T](question: string, args: openarray[T],
     for ix, arg in currentArgs:
       var shown: string
       if arg in displayNames:
-        shown = displayNames[arg]
+        shown = $displayNames[arg]
       else:
         shown = $arg
       if ix == selectedIx:
@@ -232,6 +235,13 @@ proc promptList*[T](question: string, args: openarray[T],
         for _ in (selectedIx mod currentArgs.len)..currentArgs.len:
           cursorDown(stdout)
         raise newException(ValueError, "keyboard interrupt")
+      elif callbacks != nil and c in callbacks:
+        try:
+          callbacks[c](sliceIx * show + selectedIx)
+          break
+        except Exception as e:
+          echo "error in callback: " & e.msg
+          quit 1
       else: break
 
   for i in 0..<currentArgs.len:

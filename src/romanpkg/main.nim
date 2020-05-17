@@ -8,7 +8,6 @@ import feeds
 import subscriptions
 import termask
 
-import seqreplace
 import types
 
 
@@ -82,19 +81,11 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
       displayFeed(feed)
     else:
       feed = chooseFeed(feeds)
-      # Keep track of the originally selected feed
-      # so that we can replace it with the updated unread counts later
-      var oldFeed = feed
       try:
         displayFeed(feed)
       except InterruptError:
-        # These errors are coming from declining to select a post
+        # This error comes from declining to select a post
         # Instead of exiting, return to the feed selection
-        try:
-          feeds.replace(oldFeed, feed)
-        except KeyError as e:
-          raise newException(RomanError,
-            "could not find feed in list of feeds: " & e.msg)
         continue
 
 

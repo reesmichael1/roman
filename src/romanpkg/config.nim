@@ -49,6 +49,7 @@ proc mustLoadConfig*(): RomanConfig {.raises: [].} =
     result.quit = strToChar(dict, "Keyboard", "quit")
     result.goToTop = strToChar(dict, "Keyboard", "top")
     result.goToBottom = strToChar(dict, "Keyboard", "bottom")
+    result.toggleRead = strToChar(dict, "Keyboard", "toggle-read")
     result.postWidth = strToInt(dict, "Posts", "max-width")
     result.extractLInks = strToChar(dict, "Posts", "extract-links")
   except:
