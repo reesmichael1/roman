@@ -12,7 +12,7 @@ bottom=G
 [Posts]
 # The maximum width for wrapping the posts
 # If this is greater than the terminal width, 
-# words will be wrapped to match the terminal isntead.
+# words will be wrapped to match the terminal instead.
 max-width=80
 # Key to use to extract a list of all links within a post
 # The links can then be opened in the system browser
