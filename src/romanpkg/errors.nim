@@ -1,6 +1,5 @@
 type
   RomanError* =
-    object of Exception
+    object of CatchableError
   InterruptError* =
-    object of Exception
-
+    object of CatchableError
