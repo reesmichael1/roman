@@ -74,6 +74,7 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
 
   proc shortenURL(url: string, text: string): string =
     # 3 for ' ()', 4 for '>   <'
+
     let availableWidth = terminalWidth() - text.runeLen() - 7
     if url.runeLen() > availableWidth:
       # Remove three more characters for the ellipsis
@@ -84,8 +85,11 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
     var displayNames = initTable[PostLink, string]()
     for link in links:
       if link.text.len > 0:
-        displayNames[link] = link.text & " (" & shortenURL(link.url,
-            link.text) & ")"
+        let text = if link.text.len > (terminalWidth() div 2):
+          link.text[0..<(terminalWidth() div 2)]
+        else:
+          link.text
+        displayNames[link] = text & " (" & shortenURL(link.url, text) & ")"
       else:
         displayNames[link] = shortenURL(link.url, "")
     # Move down one line in case we're at the END line already
