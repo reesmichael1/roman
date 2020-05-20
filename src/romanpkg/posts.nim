@@ -123,8 +123,12 @@ proc postFromAtomEntry*(entry: AtomEntry): Post {.raises: [RomanError].} =
   result.title = entry.title
   result.rendered = extractBody(entry.content)
   result.raw = entry.content
-  result.guid = entry.id
-  result.read = isPostRead(entry.id)
+  # Use the post link as the UID if none is provided
+  if entry.id.isEmptyOrWhitespace():
+    result.guid = entry.link.href
+  else:
+    result.guid = entry.id
+  result.read = isPostRead(result.guid)
   result.link = entry.link.href
   if entry.author.name.len > 0:
     result.author = some(entry.author.name)
@@ -134,8 +138,12 @@ proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
   result.title = item.title
   result.rendered = extractBody(item.description)
   result.raw = item.description
-  result.guid = item.guid
-  result.read = isPostRead(item.guid)
+  # Use the post link as the UID if none is provided
+  if item.guid.isEmptyOrWhitespace():
+    result.guid = item.link
+  else:
+    result.guid = item.guid
+  result.read = isPostRead(result.guid)
   result.link = item.link
   if item.author.len > 0:
     result.author = some(item.author)
