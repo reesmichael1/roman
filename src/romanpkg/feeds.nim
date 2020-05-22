@@ -191,14 +191,14 @@ proc getFeeds*(subs: seq[Subscription]): seq[Feed] {.raises: [RomanError].} =
   try:
     contents = waitFor asyncFeedsLoader(subs)
     when defined(internalRenderer):
-      var responses = newSeq[FlowVar[ref Feed]](subs.len)
+      var responses = newSeq[FlowVar[Feed]](subs.len)
       parallel:
         for ix, content in contents:
           responses[ix] = spawn buildFeedFromContentAndSub(content, subs[ix])
 
       sync()
       for ix, response in responses:
-        result[ix] = (^response)[]
+        result[ix] = ^response
 
     else:
       for ix, content in contents:
