@@ -11,12 +11,13 @@ type
     quit*: char
     goToTop*: char
     goToBottom*: char
+    toggleRead*: char
     postWidth*: int
     extractLinks*: char
 
   # Use our own Post type instead of RSSItem
   # to show metadata we collect (e.g., read/unread)
-  Post* = object
+  Post* = ref object
     title*: string
     link*: string
     rendered*: string
@@ -28,18 +29,18 @@ type
   FeedKind* = enum
     RSS = "RSS", Atom = "Atom", Unknown
 
-  Feed* = object
+  Feed* = ref object
     kind*: FeedKind
     posts*: seq[Post]
     title*: string
     unreadPosts*: int
 
-  Subscription* = object
+  Subscription* = ref object
     url*: string
     name*: string
     feedKind*: FeedKind
 
-  PostLink* = object
+  PostLink* = ref object
     text*: string
     url*: string
 
@@ -61,3 +62,7 @@ proc hash*(sub: Subscription): Hash =
 proc hash*(feed: Feed): Hash =
   result = feed.kind.hash !& feed.title.hash !& feed.unreadPosts.hash
   result = !$result
+
+
+proc `$`*[T](input: ref T): string = $(input[])
+proc hash*[T](input: ref T): Hash = hash(input[])

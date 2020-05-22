@@ -19,10 +19,10 @@ import FeedNim / [atom, rss]
 
 import errors
 import posts
-import seqreplace
 import termask
+import types
 
-from types import Feed, FeedKind, Post, Subscription
+from config import conf
 
 
 const atomNames = ["index.atom", "feed.atom", "atom.xml"]
@@ -84,38 +84,54 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
 
-    var display = initTable[string, string]()
-    var titles: seq[string]
+    var display = initTable[ref string, ref string]()
+    var titles: seq[ref string]
+
+    proc toggleRead(posts: seq[Post]): proc(index: int) {.closure, gcSafe.} =
+      return proc(index: int) {.closure, gcSafe.} =
+        var post = posts[index]
+        post.toggleRead()
+        titles[index][] = post.formatTitle()
+        display[titles[index]] = titles[index]
+
+    var callbacks = newTable[char, proc(index: int) {.closure, gcSafe.}]()
+    callbacks[conf.toggleRead] = toggleRead(feed.posts)
 
     while true:
-      display = initTable[string, string]()
+      display = initTable[ref string, ref string]()
       titles = @[]
       for p in feed.posts:
-        display[p.title] = p.formatTitle()
-        titles.add(p.title)
-      let selectedTitle = promptList("Select Post", titles, show = 10,
-          displayNames = display)
+        var title = new string
+        title[] = p.title
+        var formatted = new string
+        formatted[] = p.formatTitle()
+        titles.add(title)
+        display[title] = formatted
+      let selectedTitle = promptList[ref string, ref string]("Select Post",
+          titles, show = 10, displayNames = display, callbacks = callbacks)
       if selectedTitle.isNone():
         raise newException(InterruptError, "no post selected")
       let title = selectedTitle.unsafeGet()
-      var post = feed.posts.filterIt(it.title == title)[0]
+      var post = feed.posts.filterIt(it.title == title[])[0]
       displayPost(post)
-
-      # Replace the copy of the post in feed.posts
-      # with one that is marked as read
-      let oldPost = post
       post.markAsRead()
-      feed.posts.replace(oldPost, post)
-      feed.updateUnread()
+
   except IOError as e:
     raise newException(RomanError, "could not write to the terminal: " & e.msg)
   except ValueError as e:
     raise newException(RomanError, "could not set terminal style: " & e.msg)
+  except InterruptError as e:
+    # Update the read/unread counts in the feed
+    # before returning to feed selection
+    feed.updateUnread()
+    raise newException(InterruptError, e.msg)
+  except Exception as e:
+    raise newException(RomanError, "error loading callbacks table: " & e.msg)
 
 
-proc buildFeedFromContentAndSub(content: string, sub: Subscription): ref Feed {.
+proc buildFeedFromContentAndSub(content: string, sub: Subscription): Feed {.
     raises: [RomanError].} =
-  result = new Feed
+  result = new(Feed)
   try:
     var feedKind = sub.feedKind
     if feedKind == Unknown:
@@ -141,7 +157,7 @@ proc buildFeedFromContentAndSub(content: string, sub: Subscription): ref Feed {.
       raise newException(RomanError,
         "could not identify feed as RSS or Atom, please use --type option")
     result.kind = feedKind
-    result[].updateUnread()
+    result.updateUnread()
   except ValueError:
     raise newException(RomanError, sub.url & " is not a valid URL")
   except:
@@ -154,7 +170,7 @@ proc getFeed*(sub: Subscription): Feed {.raises: [RomanError].} =
   try:
     var client = newHttpClient()
     let content = client.getContent(sub.url)
-    result = buildFeedFromContentAndSub(content, sub)[]
+    result = buildFeedFromContentAndSub(content, sub)
   except Exception as e:
     raise newException(RomanError, e.msg)
 
@@ -186,7 +202,7 @@ proc getFeeds*(subs: seq[Subscription]): seq[Feed] {.raises: [RomanError].} =
 
     else:
       for ix, content in contents:
-        result[ix] = buildFeedFromContentAndSub(content, subs[ix])[]
+        result[ix] = buildFeedFromContentAndSub(content, subs[ix])
 
   except:
     raise newException(RomanError, "error in loading feeds: " &

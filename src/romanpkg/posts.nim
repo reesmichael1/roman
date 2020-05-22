@@ -63,7 +63,7 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
   except IOError, ValueError, Exception:
     let msg = getCurrentExceptionMsg()
     raise newException(RomanError, "could not parse post HTML: " & msg)
-  var links = @[PostLink(text: "Original Post", url: p.link)]
+  var links: seq[PostLink] = @[PostLink(text: "Original Post", url: p.link)]
 
   # Some sources use a single link as the post content
   if html.tag == "a":
@@ -124,6 +124,7 @@ proc displayPost*(p: Post) {.raises: [RomanError].} =
 
 
 proc postFromAtomEntry*(entry: AtomEntry): Post {.raises: [RomanError].} =
+  result = new(Post)
   result.title = entry.title
   result.rendered = extractBody(entry.content)
   result.raw = entry.content
@@ -139,6 +140,7 @@ proc postFromAtomEntry*(entry: AtomEntry): Post {.raises: [RomanError].} =
 
 
 proc postFromRSSItem*(item: RSSItem): Post {.raises: [RomanError].} =
+  result = new(Post)
   result.title = item.title
   result.rendered = extractBody(item.description)
   result.raw = item.description
@@ -165,3 +167,31 @@ proc markAsRead*(p: var Post) {.raises: [RomanError].} =
   except IOError:
     raise newException(RomanError,
       "could not save " & p.guid & " in the read-posts file")
+
+
+proc markAsUnread(p: var Post) {.raises: [RomanError].} =
+  try:
+    let filename = getPostReadFile()
+    let content = filename.readFile()
+    let postLines = content.splitLines()
+
+    # TODO: make a backup of the contents to write in the event of an exception
+    var f: File
+    if f.open(filename, fmWrite):
+      defer: f.close()
+      for line in postLines:
+        if p.guid != line:
+          f.writeLine(line)
+      p.read = false
+  except IOError as e:
+    raise newException(RomanError,
+      "could not open posts read file: " & e.msg)
+
+
+
+proc toggleRead*(p: var Post) {.raises: [RomanError].} =
+  if p.read:
+    p.markAsUnread()
+
+  else:
+    p.markAsRead()

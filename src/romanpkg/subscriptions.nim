@@ -79,6 +79,7 @@ proc addSubscriptionToSubsFile*(url: string, feedKind: FeedKind) {.
 
 
 proc subscriptionFromLine(line: string): Subscription {.raises: [RomanError].} =
+  result = new(Subscription)
   let fields = try:
     line.split(",").mapIt(unescape(it))
   except ValueError:
@@ -109,7 +110,7 @@ proc removeSubscriptionFromSubsFile*(sub: Subscription) {.
       for line in subsLines:
         if not line.isComment() and line.len > 0:
           let s = subscriptionFromLine(line)
-          if s != sub:
+          if s[] != sub[]:
             f.writeLine(line)
   except IOError as e:
     raise newException(RomanError,
