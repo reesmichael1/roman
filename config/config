@@ -8,7 +8,8 @@ previous=p
 quit=q
 top=g
 bottom=G
-toggle-read=R
+toggle-read=r
+mark-all-read=R
 
 [Posts]
 # The maximum width for wrapping the posts

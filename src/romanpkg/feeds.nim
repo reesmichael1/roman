@@ -94,8 +94,31 @@ proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
         titles[index][] = post.formatTitle()
         display[titles[index]] = titles[index]
 
+    proc markAllRead(posts: seq[Post]): proc(index: int) {.closure, gcSafe.} =
+      return proc(index: int) {.closure, gcSafe.} =
+        stdout.write("Really mark all posts as read? [y/n] ")
+        defer: stdout.eraseLine()
+        while true:
+          showCursor(stdout)
+          let confirm = getch()
+          hideCursor(stdout)
+          if confirm == 'n':
+            return
+          elif confirm == 'y':
+            break
+          else:
+            stdout.eraseLine()
+            stdout.write("Invalid input, please enter 'y' or 'n': ")
+            continue
+        for ix in 0..posts.high:
+          var post = posts[ix]
+          post.markAsRead()
+          titles[ix][] = post.formatTitle()
+          display[titles[ix]] = titles[ix]
+
     var callbacks = newTable[char, proc(index: int) {.closure, gcSafe.}]()
     callbacks[conf.toggleRead] = toggleRead(feed.posts)
+    callbacks[conf.allRead] = markAllRead(feed.posts)
 
     while true:
       display = initTable[ref string, ref string]()

@@ -50,8 +50,9 @@ proc mustLoadConfig*(): RomanConfig {.raises: [].} =
     result.goToTop = strToChar(dict, "Keyboard", "top")
     result.goToBottom = strToChar(dict, "Keyboard", "bottom")
     result.toggleRead = strToChar(dict, "Keyboard", "toggle-read")
+    result.allRead = strToChar(dict, "Keyboard", "mark-all-read")
     result.postWidth = strToInt(dict, "Posts", "max-width")
-    result.extractLInks = strToChar(dict, "Posts", "extract-links")
+    result.extractLinks = strToChar(dict, "Posts", "extract-links")
   except:
     echo "error loading config file: " & getCurrentExceptionMsg()
     quit(1)

@@ -236,7 +236,14 @@ proc promptList*[T, U](question: string, args: openarray[T],
         raise newException(ValueError, "keyboard interrupt")
       elif callbacks != nil and c in callbacks:
         try:
+          # Move the cursor down so any output printed by the callback
+          # is shown on its own line
+          # Callbacks are responsible for clearing their own output
+          for _ in 1..currentArgs.len:
+            cursorDown(stdout)
           callbacks[c](sliceIx * show + selectedIx)
+          for _ in 1..currentArgs.len:
+            cursorUp(stdout)
           break
         except Exception as e:
           echo "error in callback: " & e.msg

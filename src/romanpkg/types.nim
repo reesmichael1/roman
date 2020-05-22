@@ -12,6 +12,7 @@ type
     goToTop*: char
     goToBottom*: char
     toggleRead*: char
+    allRead*: char
     postWidth*: int
     extractLinks*: char
 
