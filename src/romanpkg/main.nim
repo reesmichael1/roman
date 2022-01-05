@@ -78,6 +78,12 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
   while true:
     if feeds.len == 1:
       feed = feeds[0]
+      if feed.isNil:
+        echo "feed is currently nil"
+      else:
+        echo "is initialized"
+      # Uncommenting this line makes it work
+      # echo feed.title
       displayFeed(feed)
     else:
       feed = chooseFeed(feeds)
