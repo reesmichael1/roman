@@ -33,7 +33,7 @@ proc getShareDir*(): string {.raises: [].} =
 
 proc getPostReadFile*(): string {.raises: [RomanError].} =
   result = joinPath(getShareDir(), "read-posts")
-  if not existsFile(result):
+  if not fileExists(result):
     var f: File
     if not f.open(result, mode = fmWrite):
       raise newException(RomanError, "could not create read-posts file")

@@ -11,10 +11,10 @@ binDir        = "bin"
 
 # Dependencies
 
-requires "argparse >= 0.9"
+requires "argparse >= 2.0"
 requires "csvtools >= 0.2"
 requires "fab >= 0.4"
-requires "nim >= 0.20.0"
+requires "nim >= 1.6"
 requires "nimpy >= 0.1"
 requires "noise >= 0.1"
 

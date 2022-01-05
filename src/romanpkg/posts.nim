@@ -99,7 +99,7 @@ proc displayLinks(p: Post) {.raises: [RomanError].} =
     openDefaultBrowser(link.url)
   except ValueError:
     discard
-  except UnpackError:
+  except UnpackDefect:
     discard
   except IOError as e:
     raise newException(RomanError, "could not display links: " & e.msg)

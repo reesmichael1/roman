@@ -24,7 +24,7 @@ proc isComment(line: string): bool =
 
 proc getSubscriptions*(): seq[Subscription] {.raises: [RomanError].} =
   let subsFilePath = getSubsFilePath()
-  if not existsFile(subsFilePath):
+  if not fileExists(subsFilePath):
     initConfigDir()
     return
   try:

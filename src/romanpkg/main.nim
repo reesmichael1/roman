@@ -1,5 +1,4 @@
 import options
-import sequtils
 import strutils
 import tables
 
@@ -69,7 +68,6 @@ const NOT_SUBSCRIBED_MSG = "You aren't subscribed to any feeds yet! " &
 proc runMainPath() {.raises: [RomanError, InterruptError].} =
   let subs = getSubscriptions()
   var feeds: seq[Feed]
-  var feed: Feed
   if subs.len == 0:
     echo NOT_SUBSCRIBED_MSG
     return
@@ -77,16 +75,10 @@ proc runMainPath() {.raises: [RomanError, InterruptError].} =
 
   while true:
     if feeds.len == 1:
-      feed = feeds[0]
-      if feed.isNil:
-        echo "feed is currently nil"
-      else:
-        echo "is initialized"
-      # Uncommenting this line makes it work
-      # echo feed.title
+      let feed = feeds[0]
       displayFeed(feed)
     else:
-      feed = chooseFeed(feeds)
+      let feed = chooseFeed(feeds)
       try:
         displayFeed(feed)
       except InterruptError:

@@ -29,7 +29,7 @@ const atomNames = ["index.atom", "feed.atom", "atom.xml"]
 const rssNames = ["index.rss", "feed.rss", "rss.xml"]
 
 
-proc updateUnread*(feed: var Feed) {.raises: [].} =
+proc updateUnread*(feed: Feed) {.raises: [].} =
   feed.unreadPosts = feed.posts.filterIt(not it.read).len
 
 
@@ -80,7 +80,7 @@ proc formatTitle*(feed: Feed): string {.raises: [].} =
   feed.title & " [" & $feed.unreadPosts & "/" & $feed.posts.len & "]"
 
 
-proc displayFeed*(feed: var Feed) {.raises: [RomanError, InterruptError].} =
+proc displayFeed*(feed: Feed) {.raises: [RomanError, InterruptError].} =
   try:
     under(feed.title & "\n", sty = {styleBright})
 
@@ -210,9 +210,8 @@ proc asyncFeedsLoader(subs: seq[Subscription]): Future[seq[string]] {.async.} =
 
 proc getFeeds*(subs: seq[Subscription]): seq[Feed] {.raises: [RomanError].} =
   result = newSeq[Feed](subs.len)
-  var contents: seq[string]
   try:
-    contents = waitFor asyncFeedsLoader(subs)
+    var contents = waitFor asyncFeedsLoader(subs)
     when defined(internalRenderer):
       var responses = newSeq[FlowVar[Feed]](subs.len)
       parallel:
