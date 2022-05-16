@@ -23,11 +23,19 @@ proc initConfigDir*() {.raises: [RomanError].} =
     raise newException(RomanError, getCurrentExceptionMsg())
 
 
-proc getShareDir*(): string {.raises: [].} =
+proc getShareDir*(): string {.raises: [RomanError].} =
   # TODO: support non-Linux OSes
   let defaultShare = expandTilde("~/.local/share/")
   let shareRoot = getEnv("XDG_SHARE_HOME", defaultShare)
   let shareDir = joinPath(shareRoot, "roman")
+
+  if not dirExists(shareDir):
+    try:
+      createDir(shareDir)
+    except OSError, IOError:
+      raise newException(
+        RomanError, "could not create $HOME/.local/share/roman")
+
   return shareDir
 
 
